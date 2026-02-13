@@ -8,6 +8,7 @@ import com.ansh.sportsapp.data.remote.dto.common.PageResponseDto
 import com.ansh.sportsapp.data.remote.dto.gig.CreateGigRequestDto
 import com.ansh.sportsapp.data.remote.dto.gig.GigDto
 import com.ansh.sportsapp.data.remote.dto.gig.GigRequestDto
+import com.ansh.sportsapp.domain.model.Gig
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -29,6 +30,18 @@ interface  SportsApi {
         @Query("size") size: Int = 10,
         @Query("sport") sport: String? = null,
         @Query("location") location: String? = null
+    ) : PageResponseDto<GigDto>
+
+    @GET("api/gigs/joined")
+    suspend fun getGigParticipatedIn(
+        @Query("page")page: Int = 0,
+        @Query("size") size: Int = 10
+    ) : PageResponseDto<GigDto>
+
+    @GET("api/gigs/created")
+    suspend fun getGigByGigMaster(
+        @Query("page")page: Int = 0,
+        @Query("size")size: Int = 10
     ) : PageResponseDto<GigDto>
 
     @POST("api/gigs")

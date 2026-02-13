@@ -39,7 +39,7 @@ class StompWebSocketManager @Inject constructor(
 
     private var currentUsername : String? = null
 
-    private val BASE_WS_URL = "ws://10.11.222.168:8080/ws"
+    private val BASE_WS_URL = "ws://10.57.43.168:8080/ws"
 
     private var currentGroupId : Long = -1
 
@@ -85,7 +85,6 @@ class StompWebSocketManager @Inject constructor(
         Log.d("STOMP_IN", text)
         if (text.startsWith("MESSAGE")) {
             try {
-
                 val bodyStartIndex = text.indexOf("\n\n")
                 if (bodyStartIndex != -1) {
                     val body = text.substring(bodyStartIndex+2).trim().replace("\u0000", "")

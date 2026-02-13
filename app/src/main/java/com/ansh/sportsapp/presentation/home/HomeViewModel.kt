@@ -47,4 +47,8 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+    fun refresh(){
+        loadGigs()
+    }
 }

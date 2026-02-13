@@ -30,6 +30,32 @@ class GigRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getGigParticipatedIn(): Resource<List<Gig>> {
+        return try {
+            val response = api.getGigParticipatedIn()
+
+            val gigs = response.content.map { it.toDomain() }
+
+            Resource.Success(gigs)
+        } catch (e : Exception){
+            e.printStackTrace()
+            Resource.Error("Failed to load gigs: ${e.localizedMessage}")
+        }
+    }
+
+    override suspend fun getGigByGigMaster(): Resource<List<Gig>> {
+        return try {
+            val response = api.getGigByGigMaster()
+
+            val gigs = response.content.map { it.toDomain() }
+
+            Resource.Success(gigs)
+        }catch (e : Exception){
+            e.printStackTrace()
+            Resource.Error("Failed to load gigs: ${e.localizedMessage}")
+        }
+    }
+
     override suspend fun createGig(
         sport: String,
         location: String,

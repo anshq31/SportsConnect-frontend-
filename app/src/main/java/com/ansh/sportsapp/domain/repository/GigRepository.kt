@@ -7,6 +7,10 @@ import com.ansh.sportsapp.domain.model.GigRequest
 interface GigRepository {
     suspend fun getActiveGigs(): Resource<List<Gig>>
 
+    suspend fun getGigParticipatedIn(): Resource<List<Gig>>
+
+    suspend fun getGigByGigMaster(): Resource<List<Gig>>
+
     suspend fun createGig(sport: String, location : String, dateTime: String, playersNeeded: Int): Resource<Boolean>
 
     suspend fun getGigById(gigId: Long): Resource<Gig>
@@ -15,4 +19,5 @@ interface GigRepository {
     suspend fun getMyGigRequests(): Resource<List<GigRequest>>
     suspend fun acceptRequest(requestId: Long): Resource<Boolean>
     suspend fun rejectRequest(requestId: Long): Resource<Boolean>
+
 }

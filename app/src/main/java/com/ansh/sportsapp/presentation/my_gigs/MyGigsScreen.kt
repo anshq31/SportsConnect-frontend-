@@ -9,7 +9,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.ansh.sportsapp.presentation.home.GigCard
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,6 +30,7 @@ fun MyGigsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    var selectedTabIndex by remember { mutableStateOf(0) }
 
     LaunchedEffect(true) {
         viewModel.uiEvent.collectLatest { event ->
@@ -46,70 +50,56 @@ fun MyGigsScreen(
             )
         }
     ) { padding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
         ) {
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-               Button(
-                   onClick = {},
-                   elevation = ButtonDefaults.buttonElevation(2.dp),
-                   modifier = Modifier.weight(1f)
+
+               TabRow(
+                   selectedTabIndex = selectedTabIndex,
+                   modifier = Modifier.fillMaxWidth()
                ) {
-                   Text(text = "Received ")
+                   Tab(
+                       selected = selectedTabIndex == 0,
+                       onClick = { selectedTabIndex = 0 },
+                       text = {
+                           Text(
+                               text = "Created (${state.createdGig.size})",
+                               style = MaterialTheme.typography.labelLarge
+                           )
+                       }
+                   )
+                   Tab(
+                       selected = selectedTabIndex == 1,
+                       onClick = { selectedTabIndex = 1 },
+                       text = {
+                           Text(
+                               text = "Joined (${state.joinedGigs.size})",
+                               style = MaterialTheme.typography.labelLarge
+                           )
+                       }
+                   )
                }
-
-               Button(
-                   onClick = {},
-                   elevation = ButtonDefaults.buttonElevation(2.dp),
-                   modifier = Modifier.weight(1f)
-               ) {
-                   Text(text = "Joined gig")
-               }
-
-            }
-
-            if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-
-            if (state.error != null && state.requests.isEmpty()) {
-                Text(
-                    text = state.error!!,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else if (!state.isLoading && state.requests.isEmpty()) {
-                Text(
-                    text = "No pending join requests.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                LazyColumn {
-                    item {
-                        Text(
-                            text = "Pending Requests",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                    }
-                    items(state.requests) { request ->
-                        RequestCard(
-                            request = request,
-                            onAccept = { viewModel.onAccept(request.requestId) },
-                            onReject = { viewModel.onReject(request.requestId) }
-                        )
-                    }
-                }
-            }
+                   Box(
+                       modifier = Modifier
+                           .fillMaxSize()
+                           .padding(16.dp)
+                   ) {
+                       when (selectedTabIndex) {
+                           0->CreatedGigContent(
+                               state = state,
+                               navController = navController,
+                               modifier = Modifier.fillMaxWidth()
+                           )
+                           1 -> JoinedGigsContent(
+                               state = state,
+                               navController = navController,
+                               modifier = Modifier.fillMaxSize()
+                           )
+                       }
+                   }
         }
     }
 }
