@@ -93,6 +93,7 @@ class MyGigsViewModel @Inject constructor(
         }
     }
 
+
     private fun loadRequests() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
@@ -117,7 +118,6 @@ class MyGigsViewModel @Inject constructor(
             }
         }
     }
-
     private fun processRequest(requestId: Long, isAccept: Boolean) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }

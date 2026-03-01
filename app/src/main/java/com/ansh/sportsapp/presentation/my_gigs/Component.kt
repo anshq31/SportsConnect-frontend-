@@ -22,6 +22,7 @@ import androidx.navigation.NavController
 import com.ansh.sportsapp.domain.model.Gig
 import com.ansh.sportsapp.domain.model.GigRequest
 import com.ansh.sportsapp.presentation.gig_detail.GigDetailScreen
+import com.ansh.sportsapp.presentation.gig_detail.GigDetailState
 import com.ansh.sportsapp.presentation.home.GigInfoRow
 
 @Composable
@@ -272,7 +273,7 @@ fun CreatedGigContent(
 
 @Composable
 fun ReceivedRequestsContent(
-    state: MyGigsState,
+    state: GigDetailState,
     onAccept: (Long) -> Unit,
     onReject: (Long) -> Unit,
     modifier: Modifier = Modifier

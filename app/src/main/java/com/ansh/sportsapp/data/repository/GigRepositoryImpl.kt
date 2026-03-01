@@ -145,7 +145,10 @@ class GigRepositoryImpl @Inject constructor(
             location = location,
             dateTime = dateTime,
             playersNeeded = playersNeeded,
-            gigMasterUsername = gigMasterUsername
+            gigMasterUsername = gigMasterUsername,
+            isOwner = isOwner,
+            isParticipant = isParticipant,
+            requestStatus = requestStatus
         )
     }
 

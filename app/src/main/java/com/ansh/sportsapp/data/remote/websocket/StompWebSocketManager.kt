@@ -39,7 +39,7 @@ class StompWebSocketManager @Inject constructor(
 
     private var currentUsername : String? = null
 
-    private val BASE_WS_URL = "ws://10.57.43.168:8080/ws"
+    private val BASE_WS_URL = "ws://10.146.194.168:8080/ws"
 
     private var currentGroupId : Long = -1
 

@@ -90,7 +90,7 @@ fun RegisterScreen(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done
                     ),
-                    keyboardActions = KeyboardActions { RegisterEvent.Register },
+                    keyboardActions = KeyboardActions(onDone = {viewModel.onEvent(RegisterEvent.Register)}),
                     singleLine = true
                 )
 

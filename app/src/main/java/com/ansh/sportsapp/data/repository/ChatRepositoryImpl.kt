@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.withContext
 import okhttp3.Dispatcher
 import javax.inject.Inject
 
@@ -68,18 +69,20 @@ class ChatRepositoryImpl @Inject constructor(
 
 
     override suspend fun loadHistory(groupId: Long) {
-        val page = api.getChatHistory(groupId)
-        dao.insertAll(
-            page.content.map {
-                ChatMessageEntity(
-                    id = "${it.senderUsername}-${it.timeStamp}",
-                    groupId = groupId,
-                    senderUsername = it.senderUsername,
-                    content = it.content,
-                    timeStamp = it.timeStamp
-                )
-            }
-        )
+        withContext(Dispatchers.IO){
+            val page = api.getChatHistory(groupId)
+            dao.insertAll(
+                page.content.map {
+                    ChatMessageEntity(
+                        id = "${it.senderUsername}-${it.timeStamp}",
+                        groupId = groupId,
+                        senderUsername = it.senderUsername,
+                        content = it.content,
+                        timeStamp = it.timeStamp
+                    )
+                }
+            )
+        }
     }
 
 }

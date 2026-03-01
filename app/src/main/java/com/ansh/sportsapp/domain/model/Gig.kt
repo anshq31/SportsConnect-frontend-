@@ -6,5 +6,8 @@ data class Gig(
     val location: String,
     val dateTime: String,
     val playersNeeded: Int,
-    val gigMasterUsername: String
+    val gigMasterUsername: String,
+    val isOwner : Boolean,
+    val isParticipant : Boolean,
+    val requestStatus : String = "NONE"
 )

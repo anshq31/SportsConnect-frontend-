@@ -19,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ansh.sportsapp.presentation.home.GigInfoRow
+import com.ansh.sportsapp.presentation.my_gigs.ReceivedRequestsContent
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,18 +97,95 @@ fun GigDetailScreen(
                             GigInfoRow(Icons.Default.Person, "Players Needed: ${gig.playersNeeded}")
                         }
 
-                        Button(
-                            onClick = { viewModel.onJoinClicked() },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = !state.isJoinLoading
+//                        Button(
+//                            onClick = { viewModel.onJoinClicked() },
+//                            modifier = Modifier.fillMaxWidth(),
+//                            enabled = !state.isJoinLoading
+//                        ) {
+//                            if (state.isJoinLoading) {
+//                                CircularProgressIndicator(
+//                                    color = MaterialTheme.colorScheme.onPrimary,
+//                                    modifier = Modifier.size(24.dp)
+//                                )
+//                            } else {
+//                                Text("Request to Join")
+//                            }
+//                        }
+
+                        Column(
+
                         ) {
-                            if (state.isJoinLoading) {
-                                CircularProgressIndicator(
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            } else {
-                                Text("Request to Join")
+                            when(state.buttonState){
+                                JoinButtonState.HIDDEN -> {
+                                    ReceivedRequestsContent(
+                                        state = state,
+                                        onAccept = {requestId->
+                                            viewModel.onAccept(requestId)
+                                        },
+                                        onReject = {requestId->
+                                            viewModel.onReject(requestId)
+                                        },
+                                        modifier = Modifier
+                                    )
+                                }
+                                JoinButtonState.JOINED->{
+                                    Button(
+                                        onClick = {},
+                                        enabled = false,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            disabledContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                            disabledContentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                        )
+                                    ) {
+                                        Text("✓ Joined")
+                                    }
+                                }
+
+                                JoinButtonState.PENDING->{
+                                    Button(
+                                        onClick = {},
+                                        enabled = false,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                            disabledContentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
+                                    ) {
+                                        Text("⏳ Request Pending")
+                                    }
+                                }
+
+                                JoinButtonState.REJECTED->{
+                                    Button(
+                                        onClick = {},
+                                        enabled = false,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            disabledContainerColor = MaterialTheme.colorScheme.errorContainer,
+                                            disabledContentColor = MaterialTheme.colorScheme.onErrorContainer
+                                        )
+                                    ) {
+                                        Text("✗ Request Rejected")
+                                    }
+                                }
+
+                                JoinButtonState.CAN_JOIN ->{
+                                    Button(
+                                        onClick = { viewModel.onJoinClicked() },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        enabled = !state.isJoinLoading
+                                    ) {
+                                        if (state.isJoinLoading) {
+                                            CircularProgressIndicator(
+                                                color = MaterialTheme.colorScheme.onPrimary,
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        } else {
+                                            Text("Request to Join")
+                                        }
+                                    }
+                                }
                             }
                         }
 

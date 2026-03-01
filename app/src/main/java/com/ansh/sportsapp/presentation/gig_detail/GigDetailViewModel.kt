@@ -5,7 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ansh.sportsapp.common.Resource
 import com.ansh.sportsapp.domain.usecase.gig.GetGigByIdUseCase
+import com.ansh.sportsapp.domain.usecase.gig.GetMyRequestUseCase
+import com.ansh.sportsapp.domain.usecase.gig.ManageRequestUseCase
 import com.ansh.sportsapp.domain.usecase.gig.RequestJoinUseCase
+import com.ansh.sportsapp.presentation.my_gigs.MyGigsUiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GigDetailViewModel @Inject constructor(
+    private val getMyRequestUseCase: GetMyRequestUseCase,
+    private val manageRequestUseCase: ManageRequestUseCase,
     private val requestJoinUseCase: RequestJoinUseCase,
     private val getGigByIdUseCase: GetGigByIdUseCase,
     savedStateHandle: SavedStateHandle
@@ -35,6 +40,7 @@ class GigDetailViewModel @Inject constructor(
             if (id != null) {
                 loadGig(id)
             }
+            loadRequests()
         }
     }
 
@@ -61,6 +67,7 @@ class GigDetailViewModel @Inject constructor(
                 is Resource.Success -> {
                     _state.update { it.copy(isJoinLoading = false) }
                     _uiEvent.emit(GigDetailUiEvent.JoinSuccess)
+                    loadGig(gigId)
                 }
                 is Resource.Error -> {
                     _state.update { it.copy(isJoinLoading = false) }
@@ -70,4 +77,63 @@ class GigDetailViewModel @Inject constructor(
             }
         }
     }
+
+    private fun loadRequests() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null) }
+            when (val result = getMyRequestUseCase()) {
+                is Resource.Success -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            requests = result.data ?: emptyList()
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = result.message ?: "Failed to load requests"
+                        )
+                    }
+                }
+                is Resource.Loading -> Unit
+            }
+        }
+    }
+
+    private fun processRequest(requestId: Long, isAccept: Boolean) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+
+            val result = if (isAccept) {
+                manageRequestUseCase.accept(requestId)
+            } else {
+                manageRequestUseCase.reject(requestId)
+            }
+
+            when (result) {
+                is Resource.Success -> {
+                    _uiEvent.emit(GigDetailUiEvent.ShowSnackBar(if (isAccept) "Request Accepted" else "Request Rejected"))
+                    // Reload the list to remove the processed request
+                    loadRequests()
+                }
+                is Resource.Error -> {
+                    _state.update { it.copy(isLoading = false) }
+                    _uiEvent.emit(GigDetailUiEvent.ShowSnackBar(result.message ?: "Action failed"))
+                }
+                is Resource.Loading -> Unit
+            }
+        }
+    }
+
+    fun onAccept(requestId: Long) {
+        processRequest(requestId, isAccept = true)
+    }
+
+    fun onReject(requestId: Long) {
+        processRequest(requestId, isAccept = false)
+    }
+
 }
