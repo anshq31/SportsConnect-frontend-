@@ -35,10 +35,10 @@ class GigDetailViewModel @Inject constructor(
 
     init {
         // Retrieve gigId from navigation arguments
-        savedStateHandle.get<String>("gigId")?.let { idString ->
-            val id = idString.toLongOrNull()
-            if (id != null) {
-                loadGig(id)
+        savedStateHandle.get<Long>("gigId")?.let { id ->
+            val gigId = id
+            if (gigId != null && gigId != -1L) {
+                loadGig(gigId)
             }
             loadRequests()
         }

@@ -1,5 +1,6 @@
 package com.ansh.sportsapp.data.repository
 
+import com.ansh.sportsapp.data.local.AuthPreferences
 import com.ansh.sportsapp.data.local.database.chat.ChatMessageDao
 import com.ansh.sportsapp.data.local.database.chat.ChatMessageEntity
 import com.ansh.sportsapp.data.remote.SportsApi
@@ -8,7 +9,9 @@ import com.ansh.sportsapp.domain.model.ChatMessage
 import com.ansh.sportsapp.domain.repository.ChatRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -19,19 +22,23 @@ import javax.inject.Inject
 class ChatRepositoryImpl @Inject constructor(
     private val api : SportsApi,
     private val dao : ChatMessageDao,
-    private val webSocketManager: StompWebSocketManager
+    private val webSocketManager: StompWebSocketManager,
+    private val authPreferences: AuthPreferences
 ): ChatRepository{
 
     private var currentGroupId : Long = -1
 
+    private val scope = CoroutineScope(SupervisorJob()+ Dispatchers.IO)
+
     init {
         webSocketManager.messageFlow
             .onEach { message ->
-                if (currentGroupId!= (-1).toLong()){
+                val groupId = currentGroupId
+                if (groupId!= (-1).toLong()){
                     dao.insert(
                         ChatMessageEntity(
                             id = "${message.senderUsername}-${message.timeStamp}",
-                            groupId = currentGroupId,
+                            groupId = groupId,
                             senderUsername = message.senderUsername,
                             content = message.content,
                             timeStamp = message.timeStamp
@@ -39,7 +46,7 @@ class ChatRepositoryImpl @Inject constructor(
                     )
                 }
             }
-            .launchIn(CoroutineScope(Dispatchers.IO))
+            .launchIn(scope)
     }
 
     override fun connectToChat(groupId: Long) {
@@ -56,13 +63,14 @@ class ChatRepositoryImpl @Inject constructor(
     }
 
     override fun observeMessages(groupId: Long): Flow<List<ChatMessage>> =
-        dao.observeMessages(groupId).map {entities->
+        dao.observeMessages(groupId).map { entities->
+            val currentUsername = authPreferences.username.firstOrNull()?:""
             entities.map {
                 ChatMessage(
                     senderUsername = it.senderUsername,
                     content = it.content,
                     timeStamp = it.timeStamp,
-                    isFromMe = false
+                    isFromMe = it.senderUsername == currentUsername
                 )
             }
         }

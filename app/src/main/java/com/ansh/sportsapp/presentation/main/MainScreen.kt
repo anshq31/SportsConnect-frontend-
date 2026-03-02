@@ -1,8 +1,10 @@
 package com.ansh.sportsapp.presentation.main
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -10,17 +12,50 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.ansh.sportsapp.data.local.AuthPreferences
 import com.ansh.sportsapp.presentation.navigation.AppNavigation
 import com.ansh.sportsapp.presentation.navigation.Screen
+import kotlinx.coroutines.flow.firstOrNull
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    authPreferences: AuthPreferences
+) {
+
+    var isLoggedIn by remember { mutableStateOf<Boolean?>(null) }
+
+    LaunchedEffect(Unit) {
+        val token = authPreferences.accessToken.firstOrNull()
+        isLoggedIn = !token.isNullOrBlank()
+    }
+
+    if (isLoggedIn == null){
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    val startDestination = if (isLoggedIn == true){
+        Screen.Home.route
+    }else{
+        Screen.Login.route
+    }
+
     val navController = rememberNavController()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -47,7 +82,7 @@ fun MainScreen() {
         }
     ) {innerPadding->
         Box(modifier = Modifier.padding(innerPadding)){
-            AppNavigation(navController = navController)
+            AppNavigation(navController = navController, startDestination = startDestination)
         }
     }
 }

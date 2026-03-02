@@ -10,6 +10,7 @@ data class GigDto(
     val playersNeeded: Int,
     val status: String,
     val gigMasterUsername: String,
+    @SerializedName("acceptedParticipants")
     val acceptedParticipantUsernames: List<String>,
     @SerializedName("isOwner")
     val isOwner: Boolean,

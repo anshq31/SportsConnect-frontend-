@@ -39,6 +39,10 @@ class AuthPreferences @Inject constructor(
         prefs[ACCESS_TOKEN_KEY]
     }
 
+    val refreshToken : Flow<String?> = context.dataStore.data.map { prefs->
+        prefs[REFRESH_TOKEN_KEY]
+    }
+
     val username: Flow<String?> = context.dataStore.data.map {prefs->
         prefs[USERNAME_KEY]
     }

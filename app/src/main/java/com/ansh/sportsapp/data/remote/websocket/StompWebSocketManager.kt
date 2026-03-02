@@ -39,11 +39,15 @@ class StompWebSocketManager @Inject constructor(
 
     private var currentUsername : String? = null
 
+    private val BASE_HOST = "10.146.194.168"
     private val BASE_WS_URL = "ws://10.146.194.168:8080/ws"
 
     private var currentGroupId : Long = -1
 
     fun connect(groupId : Long){
+
+        webSocket?.close(1000,"Reconnecting to new group")
+        webSocket = null
 
         currentGroupId = groupId
 
@@ -59,7 +63,7 @@ class StompWebSocketManager @Inject constructor(
 
             // 1. Send CONNECT
             // STOMP requires a NULL character (\u0000) at the end of every frame
-            val connectFrame = "CONNECT\naccept-version:1.2\nhost:10.195.225.168\nAuthorization:Bearer $token\n\n\u0000"
+            val connectFrame = "CONNECT\naccept-version:1.2\nhost:$BASE_HOST\nAuthorization:Bearer $token\n\n\u0000"
             sendStompFrame(connectFrame)
 
         }

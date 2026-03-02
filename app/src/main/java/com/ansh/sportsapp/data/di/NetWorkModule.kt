@@ -1,5 +1,6 @@
 package com.ansh.sportsapp.data.di
 
+import com.ansh.sportsapp.data.local.TokenAuthenticator
 import com.ansh.sportsapp.data.remote.AuthInterceptor
 import dagger.Module
 import dagger.Provides
@@ -26,10 +27,11 @@ object NetWorkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor,authInterceptor: AuthInterceptor) : OkHttpClient{
+    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor,authInterceptor: AuthInterceptor,tokenAuthenticator: TokenAuthenticator) : OkHttpClient{
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
+            .authenticator(tokenAuthenticator)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)

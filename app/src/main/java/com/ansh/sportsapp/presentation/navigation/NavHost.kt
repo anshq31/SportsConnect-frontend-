@@ -21,10 +21,10 @@ import com.ansh.sportsapp.presentation.home.HomeScreen
 import com.ansh.sportsapp.presentation.my_gigs.MyGigsScreen
 
 @Composable
-fun AppNavigation(navController : NavHostController){
+fun AppNavigation(navController : NavHostController,startDestination : String){
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route
+        startDestination = startDestination
     ){
         composable(Screen.Login.route) {
             LoginScreen(navController=navController)
@@ -44,7 +44,7 @@ fun AppNavigation(navController : NavHostController){
 
         composable(
             route = "gig_detail/{gigId}",
-            arguments = listOf(navArgument("gigId") { type = NavType.StringType })
+            arguments = listOf(navArgument("gigId") { type = NavType.LongType })
         ) {
             GigDetailScreen(navController = navController)
         }

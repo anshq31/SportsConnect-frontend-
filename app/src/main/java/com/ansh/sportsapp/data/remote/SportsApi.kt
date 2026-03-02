@@ -2,6 +2,7 @@ package com.ansh.sportsapp.data.remote
 
 import com.ansh.sportsapp.data.remote.dto.auth.AuthResponseDto
 import com.ansh.sportsapp.data.remote.dto.auth.LoginRequestDto
+import com.ansh.sportsapp.data.remote.dto.auth.RefreshRequestDto
 import com.ansh.sportsapp.data.remote.dto.auth.RegisterRequestDto
 import com.ansh.sportsapp.data.remote.dto.chat.ChatMessageDto
 import com.ansh.sportsapp.data.remote.dto.common.PageResponseDto
@@ -23,6 +24,9 @@ interface  SportsApi {
 
     @POST("api/auth/login")
     suspend fun login(@Body request: LoginRequestDto): AuthResponseDto
+
+    @POST("api/auth/refresh")
+    suspend fun refreshToken(@Body request: RefreshRequestDto): AuthResponseDto
 
     @GET("api/gigs/active")
     suspend fun getActiveGigs(
