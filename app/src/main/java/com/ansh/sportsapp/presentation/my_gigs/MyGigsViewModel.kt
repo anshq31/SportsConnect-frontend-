@@ -34,8 +34,6 @@ class MyGigsViewModel @Inject constructor(
 
     init {
 
-        savedStateHandle.get<String>("gigId")
-
         loadRequests()
         loadCreatedGigs()
         loadJoinedGigs()
@@ -145,13 +143,5 @@ class MyGigsViewModel @Inject constructor(
                 is Resource.Loading -> Unit
             }
         }
-    }
-
-    fun onAccept(requestId: Long) {
-        processRequest(requestId, isAccept = true)
-    }
-
-    fun onReject(requestId: Long) {
-        processRequest(requestId, isAccept = false)
     }
 }

@@ -191,16 +191,19 @@ fun GigDetailScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        OutlinedButton(
-                            onClick = {
-                                state.gig?.id?.let { id ->
-                                    navController.navigate("chat/$id")
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Open Chat (Test)")
+                        if (state.isOwner || state.isParticipant){
+                            OutlinedButton(
+                                onClick = {
+                                    state.gig?.id?.let { id ->
+                                        navController.navigate("chat/$id")
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("💬 Open Team Chat")
+                            }
                         }
+
                     }
                 }
             }
