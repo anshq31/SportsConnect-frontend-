@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -27,18 +28,18 @@ import com.ansh.sportsapp.data.local.AuthPreferences
 import com.ansh.sportsapp.presentation.navigation.AppNavigation
 import com.ansh.sportsapp.presentation.navigation.Screen
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun MainScreen(
     authPreferences: AuthPreferences
 ) {
 
-    var isLoggedIn by remember { mutableStateOf<Boolean?>(null) }
+    val isLoggedIn by authPreferences.accessToken.map { token->
+        token?.isNotBlank()
+    }.collectAsStateWithLifecycle(initialValue = null)
 
-    LaunchedEffect(Unit) {
-        val token = authPreferences.accessToken.firstOrNull()
-        isLoggedIn = !token.isNullOrBlank()
-    }
+
 
     if (isLoggedIn == null){
         Box(
@@ -66,6 +67,14 @@ fun MainScreen(
         Screen.Gigs.route,
         Screen.Profile.route
     )
+
+    if (isLoggedIn == false && currentRoute != Screen.Login.route && currentRoute != Screen.Register.route){
+        LaunchedEffect(isLoggedIn) {
+            navController.navigate(Screen.Login.route){
+                popUpTo(0){inclusive = true}
+            }
+        }
+    }
 
     Scaffold(
         bottomBar = {

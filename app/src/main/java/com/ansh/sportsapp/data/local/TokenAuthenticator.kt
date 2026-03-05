@@ -38,8 +38,23 @@ class TokenAuthenticator @Inject constructor(
 
 //        if (response.code != 401) return null
 
-            val refreshToken = runBlocking {
+            val currentToken = runBlocking {
                 authPreferences.accessToken.first()
+            }
+
+            val requestToken = response.request.header("Authorization")?.removePrefix("Bearer ")
+
+
+            if (currentToken != null && currentToken != requestToken){
+                Log.d("TOKEN_AUTH", "Token already refreshed by another thread")
+                return response.request.newBuilder()
+                    .header("Authorization", "Bearer $currentToken")
+                    .header("X-Retry", "true")
+                    .build()
+            }
+
+            val refreshToken = runBlocking {
+                authPreferences.refreshToken.first()
             }
 
             if (refreshToken.isNullOrBlank()) {
