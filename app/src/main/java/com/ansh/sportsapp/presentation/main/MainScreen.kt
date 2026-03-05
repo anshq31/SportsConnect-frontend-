@@ -1,4 +1,6 @@
 package com.ansh.sportsapp.presentation.main
+import android.util.Base64
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -29,6 +31,7 @@ import com.ansh.sportsapp.presentation.navigation.AppNavigation
 import com.ansh.sportsapp.presentation.navigation.Screen
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import org.json.JSONObject
 
 @Composable
 fun MainScreen(
@@ -36,7 +39,7 @@ fun MainScreen(
 ) {
 
     val isLoggedIn by authPreferences.accessToken.map { token->
-        token?.isNotBlank()
+        token?.isNotBlank() ?: false
     }.collectAsStateWithLifecycle(initialValue = null)
 
 
@@ -95,6 +98,8 @@ fun MainScreen(
         }
     }
 }
+
+
 
 
 @Composable

@@ -26,13 +26,11 @@ class TokenAuthenticator @Inject constructor(
 
             if (response.request.header("X-Retry") != null) {
                 Log.d("TOKEN_AUTH", "Already retried — giving up, clearing auth")
-                runBlocking { authPreferences.clearAuthData() }
                 return null
             }
 
             if (response.request.url.encodedPath.contains("/api/auth/")) {
                 Log.d("TOKEN_AUTH", "Auth endpoint failed — not retrying")
-                runBlocking { authPreferences.clearAuthData() }
                 return null
             }
 
