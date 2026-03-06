@@ -15,6 +15,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,23 +39,11 @@ fun MainScreen(
     authPreferences: AuthPreferences
 ) {
 
-    val isLoggedIn by authPreferences.accessToken.map { token->
-        token?.isNotBlank() ?: false
-    }.collectAsStateWithLifecycle(initialValue = null)
+    val accessToken by authPreferences.accessToken.collectAsState(initial = null)
 
+    val isLoggedIn = accessToken != null
 
-
-    if (isLoggedIn == null){
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-        return
-    }
-
-    val startDestination = if (isLoggedIn == true){
+    val startDestination = if (isLoggedIn){
         Screen.Home.route
     }else{
         Screen.Login.route
@@ -71,10 +60,12 @@ fun MainScreen(
         Screen.Profile.route
     )
 
-    if (isLoggedIn == false && currentRoute != Screen.Login.route && currentRoute != Screen.Register.route){
-        LaunchedEffect(isLoggedIn) {
-            navController.navigate(Screen.Login.route){
-                popUpTo(0){inclusive = true}
+
+
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn != true) {
+            navController.navigate(Screen.Login.route) {
+                popUpTo(0) { inclusive = true }
             }
         }
     }
