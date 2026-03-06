@@ -9,12 +9,15 @@ import com.ansh.sportsapp.data.remote.dto.common.PageResponseDto
 import com.ansh.sportsapp.data.remote.dto.gig.CreateGigRequestDto
 import com.ansh.sportsapp.data.remote.dto.gig.GigDto
 import com.ansh.sportsapp.data.remote.dto.gig.GigRequestDto
+import com.ansh.sportsapp.data.remote.dto.user.UserProfileDto
+import com.ansh.sportsapp.data.remote.dto.user.UserUpdateDto
 import com.ansh.sportsapp.domain.model.Gig
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -75,4 +78,10 @@ interface  SportsApi {
         @Query("page")page: Int = 0,
         @Query("size")size: Int = 20
     ): PageResponseDto<ChatMessageDto>
+
+    @GET("api/users/me")
+    suspend fun getMyProfile(): UserProfileDto
+
+    @PUT("api/users/me")
+    suspend fun updateMyProfile(@Body request : UserUpdateDto): UserProfileDto
 }

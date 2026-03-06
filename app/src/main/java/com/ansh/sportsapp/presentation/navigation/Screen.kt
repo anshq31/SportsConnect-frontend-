@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Login
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Sports
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -19,6 +20,8 @@ sealed class Screen(val route : String , val title : String , val icon : ImageVe
     object Gigs : Screen("gigs", "Gigs", Icons.Default.Sports)
     object Profile : Screen("profile", "Profile", Icons.Default.AccountCircle)
 
+    object EditProfile : Screen("edit_profile", "Edit Profile", Icons.Default.Person)
+
     // Gig Actions
     object CreateGig : Screen("create_gig", "Create Gig", Icons.Default.Add)
 
@@ -29,6 +32,7 @@ sealed class Screen(val route : String , val title : String , val icon : ImageVe
     object ChatScreen: Screen("chat/{gigId}","Team Chat",Icons.Default.Sports){
         fun createRoute(gigId: Long) = "chat/$gigId"
     }
+
 
 
 

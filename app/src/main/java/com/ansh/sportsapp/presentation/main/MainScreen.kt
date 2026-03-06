@@ -63,7 +63,7 @@ fun MainScreen(
 
 
     LaunchedEffect(isLoggedIn) {
-        if (isLoggedIn != true) {
+        if (!isLoggedIn) {
             navController.navigate(Screen.Login.route) {
                 popUpTo(0) { inclusive = true }
             }

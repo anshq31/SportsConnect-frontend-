@@ -16,9 +16,11 @@ import com.ansh.sportsapp.presentation.auth.login.LoginScreen
 import com.ansh.sportsapp.presentation.auth.signup.RegisterScreen
 import com.ansh.sportsapp.presentation.chat.ChatScreen
 import com.ansh.sportsapp.presentation.create_gig.CreateGigScreen
+import com.ansh.sportsapp.presentation.edit_user.EditProfileScreen
 import com.ansh.sportsapp.presentation.gig_detail.GigDetailScreen
 import com.ansh.sportsapp.presentation.home.HomeScreen
 import com.ansh.sportsapp.presentation.my_gigs.MyGigsScreen
+import com.ansh.sportsapp.presentation.user.ProfileScreen
 
 @Composable
 fun AppNavigation(navController : NavHostController,startDestination : String){
@@ -61,7 +63,11 @@ fun AppNavigation(navController : NavHostController,startDestination : String){
         }
 
         composable(Screen.Profile.route) {
-            PlaceholderScreen("User Profile")
+            ProfileScreen(navController = navController)
+        }
+
+        composable(Screen.EditProfile.route) {
+            EditProfileScreen(navController = navController)
         }
 
     }
