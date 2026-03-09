@@ -1,5 +1,6 @@
 package com.ansh.sportsapp.data.repository
 
+import android.util.Log
 import com.ansh.sportsapp.data.local.AuthPreferences
 import com.ansh.sportsapp.data.local.database.chat.ChatMessageDao
 import com.ansh.sportsapp.data.local.database.chat.ChatMessageEntity
@@ -11,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -37,7 +39,7 @@ class ChatRepositoryImpl @Inject constructor(
                 if (groupId!= (-1).toLong()){
                     dao.insert(
                         ChatMessageEntity(
-                            id = "${message.senderUsername}-${message.timeStamp}",
+                            id = message.id,
                             groupId = groupId,
                             senderUsername = message.senderUsername,
                             content = message.content,
@@ -67,13 +69,14 @@ class ChatRepositoryImpl @Inject constructor(
             val currentUsername = authPreferences.username.firstOrNull()?:""
             entities.map {
                 ChatMessage(
+                    id = it.id,
                     senderUsername = it.senderUsername,
                     content = it.content,
                     timeStamp = it.timeStamp,
                     isFromMe = it.senderUsername == currentUsername
                 )
             }
-        }
+        }.distinctUntilChanged()
 
 
     override suspend fun loadHistory(groupId: Long) {
@@ -82,7 +85,7 @@ class ChatRepositoryImpl @Inject constructor(
             dao.insertAll(
                 page.content.map {
                     ChatMessageEntity(
-                        id = "${it.senderUsername}-${it.timeStamp}",
+                        id = it.id,
                         groupId = groupId,
                         senderUsername = it.senderUsername,
                         content = it.content,

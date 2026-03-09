@@ -31,7 +31,8 @@ class StompWebSocketManager @Inject constructor(
 
     private var webSocket: WebSocket? = null
     private val _messageFlow = MutableSharedFlow<ChatMessage>(
-        replay = 1
+        replay = 0,
+        extraBufferCapacity = 1
     )
     val messageFlow : Flow<ChatMessage> = _messageFlow.asSharedFlow()
 
@@ -98,6 +99,7 @@ class StompWebSocketManager @Inject constructor(
 
 
                         val domainMessage = ChatMessage(
+                            id = dto.id,
                             senderUsername = dto.senderUsername,
                             content = dto.content,
                             timeStamp = dto.timeStamp,

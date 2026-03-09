@@ -62,9 +62,9 @@ fun ChatScreen(
                 state = listState,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                println("DEBUG: Current message count in UI: ${state.messages.size}")
                 items(state.messages,
-                    key = { it.timeStamp + it.senderUsername }) { message ->
+                    key = { it.id }
+                ) { message ->
                     MessageBubble(message)
                 }
             }

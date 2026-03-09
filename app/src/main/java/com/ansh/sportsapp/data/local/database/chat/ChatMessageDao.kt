@@ -18,9 +18,9 @@ interface ChatMessageDao {
     )
     fun observeMessages (groupId: Long): Flow<List<ChatMessageEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(messages : List<ChatMessageEntity>)
 
-    @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(message: ChatMessageEntity)
 }

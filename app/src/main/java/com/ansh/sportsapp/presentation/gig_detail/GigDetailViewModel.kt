@@ -95,12 +95,12 @@ class GigDetailViewModel @Inject constructor(
 
     private fun loadRequests() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
+            _state.update { it.copy(isRequestsLoading = true, error = null) }
             when (val result = getMyRequestUseCase()) {
                 is Resource.Success -> {
                     _state.update {
                         it.copy(
-                            isLoading = false,
+                            isRequestsLoading = false,
                             requests = result.data ?: emptyList()
                         )
                     }
@@ -108,7 +108,7 @@ class GigDetailViewModel @Inject constructor(
                 is Resource.Error -> {
                     _state.update {
                         it.copy(
-                            isLoading = false,
+                            isRequestsLoading = false,
                             error = result.message ?: "Failed to load requests"
                         )
                     }
