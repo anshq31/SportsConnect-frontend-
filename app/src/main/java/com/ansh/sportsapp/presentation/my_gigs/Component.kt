@@ -232,7 +232,7 @@ fun CreatedGigContent(
 ){
     Box(modifier = modifier){
         when {
-            state.isLoading->{
+            state.isCreatedGigsLoading->{
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -281,7 +281,7 @@ fun ReceivedRequestsContent(
 
     Box(modifier = modifier){
         when{
-            state.isLoading->{
+            state.isRequestsLoading->{
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )

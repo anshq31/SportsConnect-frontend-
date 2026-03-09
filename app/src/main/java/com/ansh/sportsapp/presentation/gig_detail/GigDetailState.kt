@@ -7,6 +7,7 @@ data class GigDetailState (
     val gig: Gig? = null,
     val isLoading: Boolean = false,
     val isJoinLoading: Boolean = false,
+    val isRequestsLoading: Boolean = false,
     val error: String? = null,
     val requests: List<GigRequest> = emptyList()
 ){

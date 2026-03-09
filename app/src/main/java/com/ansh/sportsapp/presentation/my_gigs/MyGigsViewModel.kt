@@ -24,7 +24,6 @@ class MyGigsViewModel @Inject constructor(
     private val manageRequestUseCase: ManageRequestUseCase,
     private val joinedGigUseCase: GetJoinedGigUseCase,
     private val createdGigUseCase: CreatedGigUseCase,
-    savedStateHandle: SavedStateHandle
 ) : ViewModel(){
     private val _state = MutableStateFlow(MyGigsState())
     val state : StateFlow<MyGigsState> = _state.asStateFlow()
@@ -33,21 +32,19 @@ class MyGigsViewModel @Inject constructor(
     val uiEvent = _uiEvent.asSharedFlow()
 
     init {
-
-        loadRequests()
         loadCreatedGigs()
         loadJoinedGigs()
     }
 
     fun loadJoinedGigs(){
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
+            _state.update { it.copy(isJoinedGigsLoading = true, error = null) }
 
             when(val result = joinedGigUseCase()){
                 is Resource.Success->{
                     _state.update {
                         it.copy(
-                            isLoading = false,
+                            isJoinedGigsLoading = false,
                             joinedGigs = result.data ?: emptyList()
                         )
                     }
@@ -55,7 +52,7 @@ class MyGigsViewModel @Inject constructor(
                 is Resource.Error->{
                     _state.update {
                         it.copy(
-                            isLoading = false,
+                            isJoinedGigsLoading = false,
                             error = result.message ?: "Failed to load gigs"
                         )
                     }
@@ -67,13 +64,13 @@ class MyGigsViewModel @Inject constructor(
 
     fun loadCreatedGigs(){
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
+            _state.update { it.copy(isCreatedGigsLoading = true, error = null) }
 
             when(val result = createdGigUseCase()){
                 is Resource.Success->{
                     _state.update {
                         it.copy(
-                            isLoading = false,
+                            isCreatedGigsLoading = false,
                             createdGig = result.data ?: emptyList()
                         )
                     }
@@ -81,7 +78,7 @@ class MyGigsViewModel @Inject constructor(
                 is Resource.Error->{
                     _state.update {
                         it.copy(
-                            isLoading = false,
+                            isCreatedGigsLoading = false,
                             error = result.message ?: "Failed to load gigs"
                         )
                     }
@@ -92,56 +89,55 @@ class MyGigsViewModel @Inject constructor(
     }
 
 
-    private fun loadRequests() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
-            when (val result = getMyRequestUseCase()) {
-                is Resource.Success -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            requests = result.data ?: emptyList()
-                        )
-                    }
-                }
-                is Resource.Error -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.message ?: "Failed to load requests"
-                        )
-                    }
-                }
-                is Resource.Loading -> Unit
-            }
-        }
-    }
-    private fun processRequest(requestId: Long, isAccept: Boolean) {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-
-            val result = if (isAccept) {
-                manageRequestUseCase.accept(requestId)
-            } else {
-                manageRequestUseCase.reject(requestId)
-            }
-
-            when (result) {
-                is Resource.Success -> {
-                    _uiEvent.emit(MyGigsUiEvent.ShowSnackbar(if (isAccept) "Request Accepted" else "Request Rejected"))
-                    // Reload the list to remove the processed request
-                    loadRequests()
-                    loadCreatedGigs()
-                    if (isAccept){
-                        loadJoinedGigs()
-                    }
-                }
-                is Resource.Error -> {
-                    _state.update { it.copy(isLoading = false) }
-                    _uiEvent.emit(MyGigsUiEvent.ShowSnackbar(result.message ?: "Action failed"))
-                }
-                is Resource.Loading -> Unit
-            }
-        }
-    }
+//    private fun loadRequests() {
+//        viewModelScope.launch {
+//            _state.update { it.copy(isLoading = true, error = null) }
+//            when (val result = getMyRequestUseCase()) {
+//                is Resource.Success -> {
+//                    _state.update {
+//                        it.copy(
+//                            isLoading = false,
+//                            requests = result.data ?: emptyList()
+//                        )
+//                    }
+//                }
+//                is Resource.Error -> {
+//                    _state.update {
+//                        it.copy(
+//                            isLoading = false,
+//                            error = result.message ?: "Failed to load requests"
+//                        )
+//                    }
+//                }
+//                is Resource.Loading -> Unit
+//            }
+//        }
+//    }
+//    private fun processRequest(requestId: Long, isAccept: Boolean) {
+//        viewModelScope.launch {
+//            _state.update { it.copy(isLoading = true) }
+//
+//            val result = if (isAccept) {
+//                manageRequestUseCase.accept(requestId)
+//            } else {
+//                manageRequestUseCase.reject(requestId)
+//            }
+//
+//            when (result) {
+//                is Resource.Success -> {
+//                    _uiEvent.emit(MyGigsUiEvent.ShowSnackbar(if (isAccept) "Request Accepted" else "Request Rejected"))
+//                    // Reload the list to remove the processed request
+//                    loadCreatedGigs()
+//                    if (isAccept){
+//                        loadJoinedGigs()
+//                    }
+//                }
+//                is Resource.Error -> {
+//                    _state.update { it.copy(isLoading = false) }
+//                    _uiEvent.emit(MyGigsUiEvent.ShowSnackbar(result.message ?: "Action failed"))
+//                }
+//                is Resource.Loading -> Unit
+//            }
+//        }
+//    }
 }

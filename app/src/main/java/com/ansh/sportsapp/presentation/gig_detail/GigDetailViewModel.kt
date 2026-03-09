@@ -8,7 +8,6 @@ import com.ansh.sportsapp.domain.usecase.gig.GetGigByIdUseCase
 import com.ansh.sportsapp.domain.usecase.gig.GetMyRequestUseCase
 import com.ansh.sportsapp.domain.usecase.gig.ManageRequestUseCase
 import com.ansh.sportsapp.domain.usecase.gig.RequestJoinUseCase
-import com.ansh.sportsapp.presentation.my_gigs.MyGigsUiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,11 +35,27 @@ class GigDetailViewModel @Inject constructor(
     init {
         // Retrieve gigId from navigation arguments
         savedStateHandle.get<Long>("gigId")?.let { id ->
-            val gigId = id
-            if (gigId != null && gigId != -1L) {
-                loadGig(gigId)
+            if (id != -1L) {
+                loadGigThenRequests(id)
             }
-            loadRequests()
+        }
+    }
+
+    private fun loadGigThenRequests(gigId : Long){
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            when(val result = getGigByIdUseCase(gigId)){
+                is Resource.Success->{
+                    _state.update { it.copy(isLoading = false, gig = result.data) }
+                    if (result.data?.isOwner == true){
+                        loadRequests()
+                    }
+                }
+                is Resource.Error->{
+                    _state.update { it.copy(isLoading = false, error = result.message) }
+                }
+                is Resource.Loading-> Unit
+            }
         }
     }
 

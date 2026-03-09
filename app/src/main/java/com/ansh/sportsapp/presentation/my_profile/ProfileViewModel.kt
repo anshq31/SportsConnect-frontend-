@@ -1,4 +1,4 @@
-package com.ansh.sportsapp.presentation.user
+package com.ansh.sportsapp.presentation.my_profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

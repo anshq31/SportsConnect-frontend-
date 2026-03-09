@@ -33,6 +33,10 @@ sealed class Screen(val route : String , val title : String , val icon : ImageVe
         fun createRoute(gigId: Long) = "chat/$gigId"
     }
 
+    object UserProfile : Screen("user_profile/{userId}", "User Profile", Icons.Default.Person) {
+        fun createRoute(userId: Long) = "user_profile/$userId"
+    }
+
 
 
 

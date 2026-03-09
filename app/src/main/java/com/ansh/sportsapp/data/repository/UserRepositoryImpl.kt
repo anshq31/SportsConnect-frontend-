@@ -37,6 +37,16 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getUserProfile(userId: Long): Resource<UserProfile> {
+        return try {
+            val dto = api.getUserProfile(userId)
+            Resource.Success(dto.toDomain())
+        }catch (e: Exception){
+            e.printStackTrace()
+            Resource.Error(e.localizedMessage ?: "An error occurred while fetching user profile")
+        }
+    }
+
     private fun UserProfileDto.toDomain(): UserProfile{
         return UserProfile(
             id = id,

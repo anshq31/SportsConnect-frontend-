@@ -20,7 +20,8 @@ import com.ansh.sportsapp.presentation.edit_user.EditProfileScreen
 import com.ansh.sportsapp.presentation.gig_detail.GigDetailScreen
 import com.ansh.sportsapp.presentation.home.HomeScreen
 import com.ansh.sportsapp.presentation.my_gigs.MyGigsScreen
-import com.ansh.sportsapp.presentation.user.ProfileScreen
+import com.ansh.sportsapp.presentation.my_profile.ProfileScreen
+import com.ansh.sportsapp.presentation.user_profile.UserProfileScreen
 
 @Composable
 fun AppNavigation(navController : NavHostController,startDestination : String){
@@ -68,6 +69,13 @@ fun AppNavigation(navController : NavHostController,startDestination : String){
 
         composable(Screen.EditProfile.route) {
             EditProfileScreen(navController = navController)
+        }
+
+        composable(
+            route = "user_profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.LongType })
+        ) {
+            UserProfileScreen(navController = navController)
         }
 
     }

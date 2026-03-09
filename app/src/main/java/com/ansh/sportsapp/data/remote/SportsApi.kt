@@ -84,4 +84,7 @@ interface  SportsApi {
 
     @PUT("api/users/me")
     suspend fun updateMyProfile(@Body request : UserUpdateDto): UserProfileDto
+
+    @GET("api/users/{userId}")
+    suspend fun getUserProfile(@Path("userId") userId: Long): UserProfileDto
 }
