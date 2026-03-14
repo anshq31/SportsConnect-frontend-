@@ -1,5 +1,6 @@
 package com.ansh.sportsapp.presentation.chat
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -43,7 +44,11 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch {
             currentUser.value = authPreferences.username.firstOrNull()?:"Unknown"
 
-            loadChatHistoryUseCase(gigId)
+            try {
+                loadChatHistoryUseCase(gigId)
+            }catch (e : Exception){
+                Log.e("ChatVM", "History load failed: ${e.message}")
+            }
 
             connectChatUseCase(gigId)
         }

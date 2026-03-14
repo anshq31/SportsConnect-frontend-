@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ansh.sportsapp.common.Resource
 import com.ansh.sportsapp.data.local.AuthPreferences
+import com.ansh.sportsapp.domain.usecase.review.GetReviewUseCase
 import com.ansh.sportsapp.domain.usecase.user.GetMyProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -18,6 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val getMyProfileUseCase: GetMyProfileUseCase,
+    private val getReviewUseCase: GetReviewUseCase,
     private val authPreferences: AuthPreferences
 ) : ViewModel(){
     private val _state = MutableStateFlow(ProfileState())
@@ -37,9 +39,25 @@ class ProfileViewModel @Inject constructor(
             when(val result = getMyProfileUseCase()){
                 is Resource.Success->{
                     _state.update { it.copy(profile = result.data, isLoading = false) }
+                    result.data?.id?.let { loadReviews(it) }
                 }
                 is Resource.Error->{
                     _state.update { it.copy(isLoading = false, error = result.message ?: "Failed to load profile") }
+                }
+                is Resource.Loading-> Unit
+            }
+        }
+    }
+
+    private fun loadReviews(userId : Long){
+        viewModelScope.launch {
+            _state.update { it.copy(isReviewLoading = true) }
+            when(val result = getReviewUseCase(userId)){
+                is Resource.Success->{
+                    _state.update { it.copy(isReviewLoading = false, reviews = result.data ?: emptyList() ) }
+                }
+                is Resource.Error->{
+                    _state.update { it.copy(isReviewLoading = false, reviewsError = result.message) }
                 }
                 is Resource.Loading-> Unit
             }

@@ -9,5 +9,7 @@ data class Gig(
     val gigMasterUsername: String,
     val isOwner : Boolean,
     val isParticipant : Boolean,
-    val requestStatus : String = "NONE"
+    val requestStatus : String = "NONE",
+    val status : GigStatus,
+    val acceptedParticipants: List<Participant> = emptyList()
 )

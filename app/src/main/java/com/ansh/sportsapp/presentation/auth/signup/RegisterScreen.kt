@@ -28,85 +28,146 @@ fun RegisterScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(true) {
+    LaunchedEffect(Unit) {
         viewModel.uiEvent.collectLatest { event ->
-            when(event){
-                is RegisterUiEvent.RegistrationSuccess->{
+            when (event) {
+                is RegisterUiEvent.RegistrationSuccess -> {
                     navController.navigate(Screen.Login.route)
                 }
-                is RegisterUiEvent.ShowSnackBar->{
+                is RegisterUiEvent.ShowSnackBar -> {
                     snackbarHostState.showSnackbar(event.message)
                 }
             }
         }
     }
 
-    Scaffold(snackbarHost = {SnackbarHost(snackbarHostState)}) {padding->
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
+                .padding(horizontal = 24.dp),
             contentAlignment = Alignment.Center
         ) {
+
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
+                // Header
                 Text(
-                    text = "Create Account",
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.padding(bottom = 32.dp)
+                    text = "JOIN THE GAME",
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.primary
                 )
 
-                OutlinedTextField(
-                    value = state.username,
-                    onValueChange = { viewModel.onEvent(RegisterEvent.EnteredUsername(it)) },
-                    label = { Text("Username") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Create your player account",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
-                OutlinedTextField(
-                    value = state.email,
-                    onValueChange = { viewModel.onEvent(RegisterEvent.EnteredEmail(it)) },
-                    label = { Text("Email") },
+                // Form Card
+                Card(
                     modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = state.password,
-                    onValueChange = { viewModel.onEvent(RegisterEvent.EnteredPassword(it)) },
-                    label = { Text("Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done
+                    shape = MaterialTheme.shapes.large,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
                     ),
-                    keyboardActions = KeyboardActions(onDone = {viewModel.onEvent(RegisterEvent.Register)}),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = { viewModel.onEvent(RegisterEvent.Register) },
-                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(6.dp)
                 ) {
-                       Text("Register")
-                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp)
+                    ) {
 
-                TextButton(onClick = { navController.popBackStack() }) {
-                    Text("Already have an account? Login")
+                        OutlinedTextField(
+                            value = state.username,
+                            onValueChange = {
+                                viewModel.onEvent(RegisterEvent.EnteredUsername(it))
+                            },
+                            label = { Text("Username") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.medium
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = state.email,
+                            onValueChange = {
+                                viewModel.onEvent(RegisterEvent.EnteredEmail(it))
+                            },
+                            label = { Text("Email") },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email
+                            ),
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.medium
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = state.password,
+                            onValueChange = {
+                                viewModel.onEvent(RegisterEvent.EnteredPassword(it))
+                            },
+                            label = { Text("Password") },
+                            visualTransformation = PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    viewModel.onEvent(RegisterEvent.Register)
+                                }
+                            ),
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.medium
+                        )
+
+                        Spacer(modifier = Modifier.height(28.dp))
+
+                        Button(
+                            onClick = { viewModel.onEvent(RegisterEvent.Register) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Text(
+                                text = "Register",
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        TextButton(
+                            onClick = { navController.popBackStack() },
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        ) {
+                            Text(
+                                text = "Already have an account? Login",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
                 }
             }
         }

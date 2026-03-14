@@ -3,6 +3,7 @@ package com.ansh.sportsapp.presentation.my_gigs
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -80,76 +81,146 @@ fun RequestCard(
 }
 
 
+//@Composable
+//fun GigCard(
+//    gig: Gig,
+//    onItemClick :(Gig)-> Unit
+//){
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(vertical = 8.dp),
+//        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+//        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+//        onClick = {onItemClick(gig)}
+//    ) {
+//        Column(
+//            modifier = Modifier
+//                .padding(16.dp)
+//                .fillMaxWidth()
+//        ) {
+//            // Header: Sport & Host
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                horizontalArrangement = Arrangement.SpaceBetween,
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//                Text(
+//                    text = gig.sport.uppercase(),
+//                    style = MaterialTheme.typography.titleMedium,
+//                    fontWeight = FontWeight.Bold,
+//                    color = MaterialTheme.colorScheme.primary
+//                )
+//                Text(
+//                    text = "@${gig.gigMasterUsername}",
+//                    style = MaterialTheme.typography.bodySmall,
+//                    color = MaterialTheme.colorScheme.secondary
+//                )
+//            }
+//
+//            Spacer(modifier = Modifier.height(8.dp))
+//
+//            // Details
+//            GigInfoRow(icon = Icons.Default.LocationOn, text = gig.location)
+//            Spacer(modifier = Modifier.height(4.dp))
+//            GigInfoRow(icon = Icons.Default.Event, text = gig.dateTime.replace("T", " "))
+//            Spacer(modifier = Modifier.height(4.dp))
+//            GigInfoRow(icon = Icons.Default.Person, text = "Looking for ${gig.playersNeeded} players")
+//        }
+//    }
+//}
+
 @Composable
 fun GigCard(
     gig: Gig,
-    onItemClick :(Gig)-> Unit
-){
+    onItemClick: (Gig) -> Unit
+) {
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        onClick = {onItemClick(gig)}
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(6.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        onClick = { onItemClick(gig) }
     ) {
+
         Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
+            modifier = Modifier.padding(18.dp)
         ) {
-            // Header: Sport & Host
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = gig.sport.uppercase(),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+
+                AssistChip(
+                    onClick = {},
+                    label = {
+                        Text(
+                            gig.sport.uppercase(),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    },
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
                 )
+
                 Text(
-                    text = "@${gig.gigMasterUsername}",
+                    "@${gig.gigMasterUsername}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Details
-            GigInfoRow(icon = Icons.Default.LocationOn, text = gig.location)
-            Spacer(modifier = Modifier.height(4.dp))
-            GigInfoRow(icon = Icons.Default.Event, text = gig.dateTime.replace("T", " "))
-            Spacer(modifier = Modifier.height(4.dp))
-            GigInfoRow(icon = Icons.Default.Person, text = "Looking for ${gig.playersNeeded} players")
+            GigInfoRow(Icons.Default.LocationOn, gig.location)
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            GigInfoRow(
+                Icons.Default.Event,
+                gig.dateTime.replace("T", " ")
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            GigInfoRow(
+                Icons.Default.Person,
+                "Looking for ${gig.playersNeeded} players"
+            )
         }
     }
 }
-
 
 @Composable
 fun ErrorState(
     message : String,
     modifier: Modifier = Modifier
 ){
-    Column(
-        modifier = modifier.padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Error",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.error
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ){
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Error",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
@@ -159,64 +230,201 @@ fun EmptyState(
     subtitle : String,
     modifier: Modifier = Modifier
 ){
-    Column(
-        modifier = modifier.padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = modifier.fillMaxSize(),
+        Alignment.Center
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
+
+//@Composable
+//fun JoinedGigsContent(
+//    state: MyGigsState,
+//    navController: NavController,
+//    modifier: Modifier = Modifier
+//){
+//    Box(modifier = modifier){
+//        when {
+//            state.isLoading->{
+//                CircularProgressIndicator(
+//                    modifier = Modifier.align(Alignment.Center)
+//                )
+//            }
+//
+//            state.error != null && state.joinedGigs.isEmpty()->{
+//                ErrorState(
+//                    message = state.error,
+//                    modifier = Modifier.align(Alignment.Center)
+//                )
+//            }
+//            state.joinedGigs.isEmpty() ->{
+//                EmptyState(
+//                    title = "No Joined Gigs",
+//                    subtitle = "Gigs you've joined will appear here",
+//                    modifier = Modifier.align(Alignment.Center)
+//                )
+//            }
+//            else->{
+//                LazyColumn(
+//                    verticalArrangement = Arrangement.spacedBy(12.dp),
+//                    contentPadding = PaddingValues(vertical = 8.dp)
+//                ) {
+//                    items(
+//                        items = state.joinedGigs,
+//                        key = { it.id }
+//                    ) { gig ->
+//                        GigCard(
+//                            gig = gig,
+//                            onItemClick = {navController.navigate("gig_detail/${gig.id}")}
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
 
 @Composable
 fun JoinedGigsContent(
     state: MyGigsState,
-    navController: NavController,
-    modifier: Modifier = Modifier
-){
-    Box(modifier = modifier){
-        when {
-            state.isLoading->{
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
+    navController: NavController
+) {
 
-            state.error != null && state.joinedGigs.isEmpty()->{
-                ErrorState(
-                    message = state.error,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+    when {
+
+        state.isJoinedGigsLoading -> {
+            CenterLoading()
+        }
+
+        state.error != null && state.joinedGigs.isEmpty() -> {
+            ErrorState(state.error)
+        }
+
+        state.joinedGigs.isEmpty() -> {
+            EmptyState(
+                "No Joined Gigs",
+                "Gigs you join will appear here"
+            )
+        }
+
+        else -> {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(vertical = 16.dp)
+            ) {
+
+                items(
+                    items = state.joinedGigs,
+                    key = { it.id }
+                ) { gig ->
+
+                    GigCard(gig) {
+                        navController.navigate("gig_detail/${gig.id}")
+                    }
+                }
             }
-            state.joinedGigs.isEmpty() ->{
-                EmptyState(
-                    title = "No Joined Gigs",
-                    subtitle = "Gigs you've joined will appear here",
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
-            else->{
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(vertical = 8.dp)
-                ) {
-                    items(
-                        items = state.joinedGigs,
-                        key = { it.id }
-                    ) { gig ->
-                        GigCard(
-                            gig = gig,
-                            onItemClick = {navController.navigate("gig_detail/${gig.id}")}
-                        )
+        }
+    }
+}
+//@Composable
+//fun CreatedGigContent(
+//    state: MyGigsState,
+//    navController: NavController,
+//    modifier: Modifier = Modifier
+//){
+//    Box(modifier = modifier){
+//        when {
+//            state.isCreatedGigsLoading->{
+//                CircularProgressIndicator(
+//                    modifier = Modifier.align(Alignment.Center)
+//                )
+//            }
+//
+//            state.error != null && state.createdGig.isEmpty()->{
+//                ErrorState(
+//                    message = state.error,
+//                    modifier = Modifier.align(Alignment.Center)
+//                )
+//            }
+//            state.createdGig.isEmpty() ->{
+//                EmptyState(
+//                    title = "No Created Gigs",
+//                    subtitle = "Gigs you've created will appear here",
+//                    modifier = Modifier.align(Alignment.Center)
+//                )
+//            }
+//            else->{
+//                LazyColumn(
+//                    verticalArrangement = Arrangement.spacedBy(12.dp),
+//                    contentPadding = PaddingValues(vertical = 8.dp)
+//                ) {
+//                    items(
+//                        items = state.createdGig,
+//                        key = { it.id }
+//                    ) { gig ->
+//                        GigCard(
+//                            gig = gig,
+//                            onItemClick = {navController.navigate("gig_detail/${gig.id}")}
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+
+@Composable
+fun CreatedGigContent(
+    state: MyGigsState,
+    navController: NavController
+) {
+
+    when {
+
+        state.isCreatedGigsLoading -> {
+            CenterLoading()
+        }
+
+        state.error != null && state.createdGig.isEmpty() -> {
+            ErrorState(state.error)
+        }
+
+        state.createdGig.isEmpty() -> {
+            EmptyState(
+                "No Created Gigs",
+                "Create a game to get started"
+            )
+        }
+
+        else -> {
+
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(vertical = 16.dp)
+            ) {
+
+                items(
+                    items = state.createdGig,
+                    key = { it.id }
+                ) { gig ->
+
+                    GigCard(gig) {
+                        navController.navigate("gig_detail/${gig.id}")
                     }
                 }
             }
@@ -225,49 +433,12 @@ fun JoinedGigsContent(
 }
 
 @Composable
-fun CreatedGigContent(
-    state: MyGigsState,
-    navController: NavController,
-    modifier: Modifier = Modifier
-){
-    Box(modifier = modifier){
-        when {
-            state.isCreatedGigsLoading->{
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
-
-            state.error != null && state.createdGig.isEmpty()->{
-                ErrorState(
-                    message = state.error,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
-            state.createdGig.isEmpty() ->{
-                EmptyState(
-                    title = "No Joined Gigs",
-                    subtitle = "Gigs you've joined will appear here",
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
-            else->{
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(vertical = 8.dp)
-                ) {
-                    items(
-                        items = state.createdGig,
-                        key = { it.id }
-                    ) { gig ->
-                        GigCard(
-                            gig = gig,
-                            onItemClick = {navController.navigate("gig_detail/${gig.id}")}
-                        )
-                    }
-                }
-            }
-        }
+fun CenterLoading() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
     }
 }
 
@@ -279,7 +450,7 @@ fun ReceivedRequestsContent(
     modifier: Modifier = Modifier
 ){
 
-    Box(modifier = modifier){
+    Box(modifier = modifier.fillMaxWidth()){
         when{
             state.isRequestsLoading->{
                 CircularProgressIndicator(
@@ -300,14 +471,11 @@ fun ReceivedRequestsContent(
                 )
             }
             else->{
-                LazyColumn(
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(vertical = 8.dp)
                 ) {
-                    items(
-                        items = state.requests,
-                        key = { it.requestId }
-                    ) { request ->
+                    state.requests.forEach { request ->
                         RequestCard(
                             request = request,
                             onAccept = { onAccept(request.requestId) },
@@ -318,5 +486,4 @@ fun ReceivedRequestsContent(
             }
         }
     }
-
 }

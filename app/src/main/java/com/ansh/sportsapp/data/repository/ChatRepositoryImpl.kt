@@ -81,18 +81,22 @@ class ChatRepositoryImpl @Inject constructor(
 
     override suspend fun loadHistory(groupId: Long) {
         withContext(Dispatchers.IO){
-            val page = api.getChatHistory(groupId)
-            dao.insertAll(
-                page.content.map {
-                    ChatMessageEntity(
-                        id = it.id,
-                        groupId = groupId,
-                        senderUsername = it.senderUsername,
-                        content = it.content,
-                        timeStamp = it.timeStamp
-                    )
-                }
-            )
+            try {
+                val page = api.getChatHistory(groupId)
+                dao.insertAll(
+                    page.content.map {
+                        ChatMessageEntity(
+                            id = it.id,
+                            groupId = groupId,
+                            senderUsername = it.senderUsername,
+                            content = it.content,
+                            timeStamp = it.timeStamp
+                        )
+                    }
+                )
+            }catch (e: Exception){
+                Log.e("ChatRepo", "Failed to load history: ${e.message}")
+            }
         }
     }
 

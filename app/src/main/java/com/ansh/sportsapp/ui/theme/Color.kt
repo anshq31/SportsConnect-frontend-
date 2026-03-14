@@ -9,3 +9,15 @@ val Pink80 = Color(0xFFEFB8C8)
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
+
+val SportsGreen = Color(0xFF00C853)
+val SportsGreenDark = Color(0xFF009624)
+
+val FieldGreen = Color(0xFF0F3D2E)
+val StadiumDark = Color(0xFF0B1F1A)
+
+val AccentOrange = Color(0xFFFF6D00)
+val AccentBlue = Color(0xFF2979FF)
+
+val SurfaceDark = Color(0xFF121212)
+val SurfaceLight = Color(0xFFF7F9F8)

@@ -8,6 +8,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
+import java.util.concurrent.TimeUnit
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Module
@@ -16,6 +18,8 @@ object ChatModule {
     @Provides
     @Singleton
     fun provideGson(): Gson = Gson()
+
+
 
     @Provides
     @Singleton

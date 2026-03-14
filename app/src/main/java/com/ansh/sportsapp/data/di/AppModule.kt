@@ -9,9 +9,11 @@
     import com.ansh.sportsapp.data.repository.ChatRepositoryImpl
     import com.ansh.sportsapp.data.repository.GigRepositoryImpl
     import com.ansh.sportsapp.data.repository.UserRepositoryImpl
+    import com.ansh.sportsapp.data.repository.ReviewRepositoryImpl
     import com.ansh.sportsapp.domain.repository.AuthRepository
     import com.ansh.sportsapp.domain.repository.ChatRepository
     import com.ansh.sportsapp.domain.repository.GigRepository
+    import com.ansh.sportsapp.domain.repository.ReviewRepository
     import com.ansh.sportsapp.domain.repository.UserRepository
     import dagger.Module
     import dagger.Provides
@@ -71,6 +73,12 @@
         @Provides
         @Singleton
         fun provideUserRepository(repository: UserRepositoryImpl): UserRepository {
+            return repository
+        }
+
+        @Provides
+        @Singleton
+        fun provideReviewRepository(repository: ReviewRepositoryImpl): ReviewRepository {
             return repository
         }
     }

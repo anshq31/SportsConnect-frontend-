@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ansh.sportsapp.common.Resource
+import com.ansh.sportsapp.domain.usecase.gig.CompleteGigUseCase
 import com.ansh.sportsapp.domain.usecase.gig.GetGigByIdUseCase
 import com.ansh.sportsapp.domain.usecase.gig.GetMyRequestUseCase
 import com.ansh.sportsapp.domain.usecase.gig.ManageRequestUseCase
@@ -24,6 +25,7 @@ class GigDetailViewModel @Inject constructor(
     private val manageRequestUseCase: ManageRequestUseCase,
     private val requestJoinUseCase: RequestJoinUseCase,
     private val getGigByIdUseCase: GetGigByIdUseCase,
+    private val completeGigUseCase: CompleteGigUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(){
     private val _state = MutableStateFlow(GigDetailState())
@@ -120,7 +122,7 @@ class GigDetailViewModel @Inject constructor(
 
     private fun processRequest(requestId: Long, isAccept: Boolean) {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
+            _state.update { it.copy(isRequestsLoading = true) }
 
             val result = if (isAccept) {
                 manageRequestUseCase.accept(requestId)
@@ -151,4 +153,18 @@ class GigDetailViewModel @Inject constructor(
         processRequest(requestId, isAccept = false)
     }
 
+
+    fun completeGig(){
+        val gigId = state.value.gig?.id ?: return
+        viewModelScope.launch {
+            try {
+                val updatedGig =  completeGigUseCase(gigId = gigId)
+                _state.update { it.copy(isLoading = false, gig = updatedGig) }
+                _uiEvent.emit(GigDetailUiEvent.ShowSnackBar("Gig marked as completed"))
+            }catch (e: Exception){
+                _state.update { it.copy(isLoading = false) }
+                _uiEvent.emit(GigDetailUiEvent.ShowSnackBar(e.message ?: "Failed to complete gig"))
+            }
+        }
+    }
 }

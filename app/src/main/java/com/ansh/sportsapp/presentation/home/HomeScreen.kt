@@ -22,7 +22,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -38,7 +37,7 @@ fun HomeScreen(
     }
 
     LaunchedEffect(state.isLoading) {
-        if (!state.isLoading && isRefreshing){
+        if (!state.isLoading && isRefreshing) {
             isRefreshing = false
         }
     }
@@ -46,28 +45,41 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Active Gigs") },
+                title = {
+                    Column {
+                        Text(
+                            text = "Active Gigs",
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                        Text(
+                            text = "Find games happening near you",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
         }
     ) { padding ->
+
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = {
                 isRefreshing = true
                 viewModel.refresh()
             },
-            state = PullToRefreshState(),
+            state = pullToRefreshState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
 
-            when{
-                state.isLoading && state.gigs.isEmpty()->{
+            when {
+
+                state.isLoading && state.gigs.isEmpty() -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -75,34 +87,32 @@ fun HomeScreen(
                         CircularProgressIndicator()
                     }
                 }
-                state.error != null && state.gigs.isEmpty()->{
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = state.error.toString(),
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
+
+                state.error != null && state.gigs.isEmpty() -> {
+                    EmptyState(
+                        text = state.error ?: "Something went wrong"
+                    )
                 }
-                state.gigs.isEmpty()->{
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "No available gigs",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
+
+                state.gigs.isEmpty() -> {
+                    EmptyState(
+                        text = "No gigs available right now"
+                    )
                 }
-                else->{
+
+                else -> {
+
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp)
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 20.dp,
+                            bottom = 24.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
+
                         items(state.gigs) { gig ->
                             GigCard(
                                 gig = gig,
@@ -114,45 +124,6 @@ fun HomeScreen(
                     }
                 }
             }
-
-//            if (state.isLoading) {
-//                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-//            }
-//
-//            if (state.error != null) {
-//                Column(
-//                    modifier = Modifier.align(Alignment.Center),
-//                    horizontalAlignment = Alignment.CenterHorizontally
-//                ) {
-//                    Text(text = state.error!!, color = MaterialTheme.colorScheme.error)
-//                    Spacer(modifier = Modifier.height(8.dp))
-//                    Button(onClick = { viewModel.loadGigs() }) {
-//                        Text("Retry")
-//                    }
-//                }
-//            }
-//
-//            if (!state.isLoading && state.gigs.isEmpty() && state.error == null) {
-//                Text(
-//                    text = "No active gigs found.",
-//                    modifier = Modifier.align(Alignment.Center),
-//                    style = MaterialTheme.typography.bodyLarge
-//                )
-//            }
-//
-//            LazyColumn(
-//                modifier = Modifier.fillMaxSize(),
-//                contentPadding = PaddingValues(16.dp)
-//            ) {
-//                items(state.gigs) { gig ->
-//                    GigCard(
-//                        gig = gig,
-//                        onItemClick = {
-//                             navController.navigate("gig_detail/${gig.id}")
-//                        }
-//                    )
-//                }
-//            }
         }
     }
 }

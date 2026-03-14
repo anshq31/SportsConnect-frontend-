@@ -22,74 +22,6 @@ class TokenAuthenticator @Inject constructor(
     override fun authenticate(route : Route?, response : Response ): Request? {
 
         synchronized(lock){
-
-//            Log.d("TOKEN_AUTH", "401 received — attempting token refresh")
-//
-//            if (response.request.header("X-Retry") != null) {
-//                Log.d("TOKEN_AUTH", "Already retried — giving up, clearing auth")
-//                return null
-//            }
-//
-//            if (response.request.url.encodedPath.contains("/api/auth/")) {
-//                Log.d("TOKEN_AUTH", "Auth endpoint failed — not retrying")
-//                return null
-//            }
-//
-////        if (response.code != 401) return null
-//
-//            val currentToken = runBlocking {
-//                authPreferences.accessToken.first()
-//            }
-//
-//            val requestToken = response.request.header("Authorization")?.removePrefix("Bearer ")
-//
-//
-//            if (currentToken != null && currentToken != requestToken){
-//                Log.d("TOKEN_AUTH", "Token already refreshed by another thread")
-//                return response.request.newBuilder()
-//                    .header("Authorization", "Bearer $currentToken")
-//                    .header("X-Retry", "true")
-//                    .build()
-//            }
-//
-//            val refreshToken = runBlocking {
-//                authPreferences.refreshToken.first()
-//            }
-//
-//            if (refreshToken.isNullOrBlank()) {
-//                Log.d("TOKEN_AUTH", "No refresh token found — clearing auth")
-//                runBlocking { authPreferences.clearAuthData() }
-//                return null
-//            }
-//
-//            val refreshResult = runBlocking {
-//                try {
-//                    api.get().refreshToken(RefreshRequestDto(refreshToken))
-//                }catch (e : Exception){
-//                    Log.e("TOKEN_AUTH", "Refresh call failed: ${e.message}")
-//                    null
-//                }
-//            }
-//            if (refreshResult == null) {
-//                Log.d("TOKEN_AUTH", "Refresh returned null — clearing auth")
-//                runBlocking { authPreferences.clearAuthData() }
-//                return null
-//            }
-//
-//            Log.d("TOKEN_AUTH", "Token refreshed successfully!")
-//
-//            runBlocking {
-//                authPreferences.saveAuthData(
-//                    accessToken = refreshResult.accessToken,
-//                    refreshToken = refreshResult.refreshToken,
-//                    userId = refreshResult.id.toString(),
-//                    username = refreshResult.username
-//                )
-//            }
-//            return response.request.newBuilder()
-//                .header("Authorization","Bearer ${refreshResult.accessToken}")
-//                .header("X-Retry", "true")
-//                .build()
             if (response.code != 401) return null
 
             val refreshToken = runBlocking {
@@ -118,6 +50,5 @@ class TokenAuthenticator @Inject constructor(
                 null
             }
         }
-
     }
 }

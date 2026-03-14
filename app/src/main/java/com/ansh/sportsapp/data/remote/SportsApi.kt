@@ -9,6 +9,8 @@ import com.ansh.sportsapp.data.remote.dto.common.PageResponseDto
 import com.ansh.sportsapp.data.remote.dto.gig.CreateGigRequestDto
 import com.ansh.sportsapp.data.remote.dto.gig.GigDto
 import com.ansh.sportsapp.data.remote.dto.gig.GigRequestDto
+import com.ansh.sportsapp.data.remote.dto.user.ReviewDto
+import com.ansh.sportsapp.data.remote.dto.user.ReviewRequestDto
 import com.ansh.sportsapp.data.remote.dto.user.UserProfileDto
 import com.ansh.sportsapp.data.remote.dto.user.UserUpdateDto
 import com.ansh.sportsapp.domain.model.Gig
@@ -79,6 +81,8 @@ interface  SportsApi {
         @Query("size")size: Int = 20
     ): PageResponseDto<ChatMessageDto>
 
+    @PUT("api/gigs/{gigId}/complete")
+    suspend fun completeGig(@Path("gigId") gigId: Long): GigDto
     @GET("api/users/me")
     suspend fun getMyProfile(): UserProfileDto
 
@@ -87,4 +91,14 @@ interface  SportsApi {
 
     @GET("api/users/{userId}")
     suspend fun getUserProfile(@Path("userId") userId: Long): UserProfileDto
+
+    @POST("api/reviews")
+    suspend fun submitReview(@Body request : ReviewRequestDto): ReviewDto
+
+    @GET("api/reviews/user/{userId}")
+    suspend fun getReviewsForUser(
+        @Path("userId") userId: Long,
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 10
+    ): PageResponseDto<ReviewDto>
 }

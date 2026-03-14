@@ -1,6 +1,7 @@
 package com.ansh.sportsapp.domain.repository
 
 import com.ansh.sportsapp.common.Resource
+import com.ansh.sportsapp.data.remote.dto.gig.GigDto
 import com.ansh.sportsapp.domain.model.Gig
 import com.ansh.sportsapp.domain.model.GigRequest
 
@@ -19,5 +20,7 @@ interface GigRepository {
     suspend fun getMyGigRequests(): Resource<List<GigRequest>>
     suspend fun acceptRequest(requestId: Long): Resource<Boolean>
     suspend fun rejectRequest(requestId: Long): Resource<Boolean>
+
+    suspend fun completeGig(gigId: Long): Gig
 
 }

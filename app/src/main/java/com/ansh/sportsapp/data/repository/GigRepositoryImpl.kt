@@ -7,6 +7,8 @@ import com.ansh.sportsapp.data.remote.dto.gig.GigDto
 import com.ansh.sportsapp.data.remote.dto.gig.GigRequestDto
 import com.ansh.sportsapp.domain.model.Gig
 import com.ansh.sportsapp.domain.model.GigRequest
+import com.ansh.sportsapp.domain.model.GigStatus
+import com.ansh.sportsapp.domain.model.Participant
 import com.ansh.sportsapp.domain.repository.GigRepository
 import retrofit2.HttpException
 import java.io.IOException
@@ -138,6 +140,10 @@ class GigRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun completeGig(gigId: Long): Gig {
+        return api.completeGig(gigId).toDomain()
+    }
+
     private fun GigDto.toDomain(): Gig {
         return Gig(
             id = id,
@@ -148,7 +154,13 @@ class GigRepositoryImpl @Inject constructor(
             gigMasterUsername = gigMasterUsername,
             isOwner = isOwner,
             isParticipant = isParticipant,
-            requestStatus = requestStatus
+            requestStatus = requestStatus,
+            status = runCatching {
+                GigStatus.valueOf(status)
+            }.getOrDefault(GigStatus.ACTIVE),
+            acceptedParticipants = acceptedParticipant.map {
+                Participant(id = it.id, username = it.username)
+            }
         )
     }
 

@@ -1,4 +1,5 @@
 package com.ansh.sportsapp.presentation.my_profile
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -57,7 +58,7 @@ fun ProfileScreen(
                 title = { Text("My Profile") },
                 actions = {
 
-                    IconButton(onClick = {navController.navigate(Screen.EditProfile.route)}) {
+                    IconButton(onClick = { navController.navigate(Screen.EditProfile.route) }) {
                         Icon(Icons.Default.Person, contentDescription = "Edit Profile")
                     }
 
@@ -119,7 +120,11 @@ fun ProfileScreen(
                 }
 
                 state.profile != null -> {
-                    ProfileContent(profile = state.profile!!)
+                    ProfileContent(
+                        profile = state.profile!!,
+                        reviews = state.reviews,
+                        isReviewLoading = state.isReviewLoading
+                    )
                 }
             }
         }
@@ -127,7 +132,7 @@ fun ProfileScreen(
 }
 
 @Composable
-fun ProfileContent(profile: UserProfile) {
+fun ProfileContent(profile: UserProfile, reviews: List<Review>, isReviewLoading: Boolean = false) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -222,33 +227,53 @@ fun ProfileContent(profile: UserProfile) {
         }
 
         // --- REVIEWS HEADER ---
-        if (profile.reviews.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Reviews (${profile.reviews.size})",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
+        item(key = "reviews_header") {
+            Text(
+                text = "Reviews (${reviews.size})",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
 
-            items(profile.reviews) { review ->
-                ReviewCard(review = review)
-            }
-        } else {
-            item {
-                Card(modifier = Modifier.fillMaxWidth()) {
+        when {
+            isReviewLoading -> {
+                item(key = "reviews_loading") {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(24.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "No reviews yet",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        CircularProgressIndicator()
                     }
+                }
+            }
+
+            reviews.isEmpty() -> {
+                item(key = "reviews_empty") {
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No reviews yet",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            else -> {
+                items(
+                    items = reviews,
+                    key = { "review_${it.id}" }
+                ) { review ->
+                    ReviewCard(review = review)
                 }
             }
         }

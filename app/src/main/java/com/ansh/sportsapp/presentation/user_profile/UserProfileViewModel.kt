@@ -4,8 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ansh.sportsapp.common.Resource
-import com.ansh.sportsapp.data.local.AuthPreferences
-import com.ansh.sportsapp.domain.usecase.user.GetMyProfileUseCase
+import com.ansh.sportsapp.domain.usecase.review.GetReviewUseCase
 import com.ansh.sportsapp.domain.usecase.user.GetUserProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class UserProfileViewModel @Inject constructor(
     private val getUserProfileUseCase: GetUserProfileUseCase,
+    private val getReviewUseCase: GetReviewUseCase,
     private val savedStateHandle: SavedStateHandle
 ): ViewModel(){
     private val _state = MutableStateFlow(UserProfileState())
@@ -40,6 +40,7 @@ class UserProfileViewModel @Inject constructor(
                     _state.update {
                         it.copy(isLoading = false, profile = result.data)
                     }
+                    loadReviews()
                 }
                 is Resource.Error -> {
                     _state.update {
@@ -50,6 +51,21 @@ class UserProfileViewModel @Inject constructor(
                     }
                 }
                 is Resource.Loading -> Unit
+            }
+        }
+    }
+
+    private fun loadReviews(){
+        viewModelScope.launch {
+            _state.update { it.copy(isReviewLoading = true) }
+            when(val result = getReviewUseCase(userId)){
+                is Resource.Success->{
+                    _state.update { it.copy(isReviewLoading = false, reviews = result.data ?: emptyList() ) }
+                }
+                is Resource.Error->{
+                    _state.update { it.copy(isReviewLoading = false, reviewsError = result.message) }
+                }
+                is Resource.Loading-> Unit
             }
         }
     }

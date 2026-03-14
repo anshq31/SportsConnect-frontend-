@@ -90,7 +90,7 @@ fun UserProfileScreen(
                 }
 
                 state.profile != null -> {
-                    ProfileContent(profile = state.profile!!)
+                    ProfileContent(profile = state.profile!!, reviews = state.reviews, isReviewLoading = state.isReviewLoading)
                 }
             }
         }

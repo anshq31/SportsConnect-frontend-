@@ -20,8 +20,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MyGigsViewModel @Inject constructor(
-    private val getMyRequestUseCase: GetMyRequestUseCase,
-    private val manageRequestUseCase: ManageRequestUseCase,
     private val joinedGigUseCase: GetJoinedGigUseCase,
     private val createdGigUseCase: CreatedGigUseCase,
 ) : ViewModel(){
@@ -87,57 +85,4 @@ class MyGigsViewModel @Inject constructor(
             }
         }
     }
-
-
-//    private fun loadRequests() {
-//        viewModelScope.launch {
-//            _state.update { it.copy(isLoading = true, error = null) }
-//            when (val result = getMyRequestUseCase()) {
-//                is Resource.Success -> {
-//                    _state.update {
-//                        it.copy(
-//                            isLoading = false,
-//                            requests = result.data ?: emptyList()
-//                        )
-//                    }
-//                }
-//                is Resource.Error -> {
-//                    _state.update {
-//                        it.copy(
-//                            isLoading = false,
-//                            error = result.message ?: "Failed to load requests"
-//                        )
-//                    }
-//                }
-//                is Resource.Loading -> Unit
-//            }
-//        }
-//    }
-//    private fun processRequest(requestId: Long, isAccept: Boolean) {
-//        viewModelScope.launch {
-//            _state.update { it.copy(isLoading = true) }
-//
-//            val result = if (isAccept) {
-//                manageRequestUseCase.accept(requestId)
-//            } else {
-//                manageRequestUseCase.reject(requestId)
-//            }
-//
-//            when (result) {
-//                is Resource.Success -> {
-//                    _uiEvent.emit(MyGigsUiEvent.ShowSnackbar(if (isAccept) "Request Accepted" else "Request Rejected"))
-//                    // Reload the list to remove the processed request
-//                    loadCreatedGigs()
-//                    if (isAccept){
-//                        loadJoinedGigs()
-//                    }
-//                }
-//                is Resource.Error -> {
-//                    _state.update { it.copy(isLoading = false) }
-//                    _uiEvent.emit(MyGigsUiEvent.ShowSnackbar(result.message ?: "Action failed"))
-//                }
-//                is Resource.Loading -> Unit
-//            }
-//        }
-//    }
 }

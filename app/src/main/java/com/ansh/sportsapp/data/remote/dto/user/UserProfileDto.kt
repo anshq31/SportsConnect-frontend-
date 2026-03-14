@@ -8,5 +8,4 @@ data class UserProfileDto(
     val experience : String?,
     val overallRating : Double?,
     val skill : Set<String>?,
-    val reviewsReceived : List<ReviewDto>?
 )

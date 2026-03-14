@@ -54,7 +54,6 @@ class UserRepositoryImpl @Inject constructor(
             experience = experience?:"",
             overallRating = overallRating ?: 0.0,
             skills = skill?.toList()?: emptyList(),
-            reviews = reviewsReceived?.map { it.toDomain() }?: emptyList(),
         )
     }
 

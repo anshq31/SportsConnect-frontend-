@@ -21,9 +21,9 @@ fun MessageBubble(message: ChatMessage) {
     val align = if (isMe) Alignment.End else Alignment.Start
     val color = if (isMe) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
     val shape = if (isMe) {
-        RoundedCornerShape(12.dp, 12.dp, 0.dp, 12.dp)
+        RoundedCornerShape(16.dp, 16.dp, 4.dp, 16.dp)
     } else {
-        RoundedCornerShape(12.dp, 12.dp, 12.dp, 0.dp)
+        RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp)
     }
 
     Column(
@@ -34,6 +34,7 @@ fun MessageBubble(message: ChatMessage) {
             Text(
                 text = message.senderUsername,
                 style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(start = 8.dp, bottom = 2.dp)
             )
         }

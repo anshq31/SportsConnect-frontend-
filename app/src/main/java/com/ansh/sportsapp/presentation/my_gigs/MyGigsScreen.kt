@@ -17,7 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import com.ansh.sportsapp.presentation.home.GigCard
 import kotlinx.coroutines.flow.collectLatest
@@ -31,6 +33,17 @@ fun MyGigsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var selectedTabIndex by remember { mutableStateOf(0) }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(
+            androidx.lifecycle.Lifecycle.State.RESUMED
+        ){
+            viewModel.loadCreatedGigs()
+            viewModel.loadJoinedGigs()
+        }
+    }
 
     LaunchedEffect(true) {
         viewModel.uiEvent.collectLatest { event ->
@@ -46,7 +59,19 @@ fun MyGigsScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Gigs") }
+                title = {
+                    Column() {
+                        Text("My Gigs", style = MaterialTheme.typography.headlineMedium)
+                        Text(
+                            "Manage games you created or joined",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
             )
         }
     ) { padding ->
@@ -55,8 +80,6 @@ fun MyGigsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-
-
                TabRow(
                    selectedTabIndex = selectedTabIndex,
                    modifier = Modifier.fillMaxWidth()
@@ -82,24 +105,22 @@ fun MyGigsScreen(
                        }
                    )
                }
-                   Box(
-                       modifier = Modifier
-                           .fillMaxSize()
-                           .padding(16.dp)
-                   ) {
-                       when (selectedTabIndex) {
-                           0->CreatedGigContent(
-                               state = state,
-                               navController = navController,
-                               modifier = Modifier.fillMaxWidth()
-                           )
-                           1 -> JoinedGigsContent(
-                               state = state,
-                               navController = navController,
-                               modifier = Modifier.fillMaxSize()
-                           )
-                       }
+               Box(
+                   modifier = Modifier
+                       .fillMaxSize()
+                       .padding(horizontal = 16.dp)
+               ) {
+                   when (selectedTabIndex) {
+                       0->CreatedGigContent(
+                           state = state,
+                           navController = navController,
+                       )
+                       1 -> JoinedGigsContent(
+                           state = state,
+                           navController = navController,
+                       )
                    }
+               }
         }
     }
 }

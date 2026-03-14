@@ -1,5 +1,6 @@
 package com.ansh.sportsapp.data.remote.dto.gig
 
+import com.ansh.sportsapp.data.remote.dto.user.ParticipantDto
 import com.google.gson.annotations.SerializedName
 
 data class GigDto(
@@ -11,7 +12,7 @@ data class GigDto(
     val status: String,
     val gigMasterUsername: String,
     @SerializedName("acceptedParticipants")
-    val acceptedParticipantUsernames: List<String>,
+    val acceptedParticipant: List<ParticipantDto>,
     @SerializedName("isOwner")
     val isOwner: Boolean,
     @SerializedName("isParticipant")
