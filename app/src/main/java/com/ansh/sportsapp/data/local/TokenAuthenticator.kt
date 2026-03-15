@@ -23,6 +23,21 @@ class TokenAuthenticator @Inject constructor(
 
         synchronized(lock){
             if (response.code != 401) return null
+            if(response.request.url.encodedPath.contains("/api/auth/refresh")) return null
+            if (responseCount(response) >= 2)return null
+
+            val requestToken = response.request.header("Authorization")
+                ?.removePrefix("Bearer ")
+                ?.trim()
+
+            val latestAccessToken = runBlocking { authPreferences.accessToken.first() }
+
+            // If another request already refreshed the token, just retry with the latest token.
+            if (!latestAccessToken.isNullOrBlank() && latestAccessToken != requestToken) {
+                return response.request.newBuilder()
+                    .header("Authorization", "Bearer $latestAccessToken")
+                    .build()
+            }
 
             val refreshToken = runBlocking {
                 authPreferences.refreshToken.first()
@@ -51,4 +66,17 @@ class TokenAuthenticator @Inject constructor(
             }
         }
     }
+
+    private fun responseCount(response: Response): Int {
+        var count = 1
+        var priorResponse = response.priorResponse
+
+        while (priorResponse != null) {
+            count++
+            priorResponse = priorResponse.priorResponse
+        }
+
+        return count
+    }
+
 }

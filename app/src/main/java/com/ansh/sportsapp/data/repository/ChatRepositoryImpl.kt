@@ -83,6 +83,9 @@ class ChatRepositoryImpl @Inject constructor(
         withContext(Dispatchers.IO){
             try {
                 val page = api.getChatHistory(groupId)
+
+                dao.deleteByGroupId(groupId)
+
                 dao.insertAll(
                     page.content.map {
                         ChatMessageEntity(
