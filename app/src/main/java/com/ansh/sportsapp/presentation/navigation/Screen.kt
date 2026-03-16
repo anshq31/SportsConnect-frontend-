@@ -36,9 +36,4 @@ sealed class Screen(val route : String , val title : String , val icon : ImageVe
     object UserProfile : Screen("user_profile/{userId}", "User Profile", Icons.Default.Person) {
         fun createRoute(userId: Long) = "user_profile/$userId"
     }
-
-
-
-
-    // Add logic to parse arguments if needed later (e.g., detail/{id})
 }

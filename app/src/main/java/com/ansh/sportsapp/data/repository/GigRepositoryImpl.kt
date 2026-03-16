@@ -17,10 +17,13 @@ import javax.inject.Inject
 class GigRepositoryImpl @Inject constructor(
     private val api: SportsApi
 ) : GigRepository{
-    override suspend fun getActiveGigs(): Resource<List<Gig>> {
+    override suspend fun getActiveGigs(sport: String?, location: String?): Resource<List<Gig>> {
         return try {
             // Because of AuthInterceptor, the token is added automatically!
-            val response = api.getActiveGigs()
+            val response = api.getActiveGigs(
+                sport = sport?.ifBlank { null },
+                location = location?.ifBlank { null }
+            )
 
             // Map DTOs to Domain Models
             val gigs = response.content.map { it.toDomain() }
@@ -167,6 +170,7 @@ class GigRepositoryImpl @Inject constructor(
     private fun GigRequestDto.toDomain(): GigRequest{
         return GigRequest(
             requestId = requestId,
+            requesterId = requesterId,
             requesterUsername = requesterUsername
         )
     }

@@ -18,6 +18,15 @@ import javax.inject.Inject
 class CreateGigViewModel @Inject constructor(
     private val useCase: CreateGigUseCase
 ) : ViewModel(){
+
+    val availableSports: List<Pair<Long, String>> = listOf(
+        1L to "Basketball",
+        2L to "Soccer",
+        3L to "Tennis",
+        4L to "Volleyball",
+        5L to "Cricket"
+    )
+
     private val _state = MutableStateFlow(CreateGigState())
     val state : StateFlow<CreateGigState> = _state.asStateFlow()
 

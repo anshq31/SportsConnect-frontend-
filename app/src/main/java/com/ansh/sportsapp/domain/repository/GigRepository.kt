@@ -6,7 +6,10 @@ import com.ansh.sportsapp.domain.model.Gig
 import com.ansh.sportsapp.domain.model.GigRequest
 
 interface GigRepository {
-    suspend fun getActiveGigs(): Resource<List<Gig>>
+    suspend fun getActiveGigs(
+        sport: String? = null,
+        location: String? = null
+    ): Resource<List<Gig>>
 
     suspend fun getGigParticipatedIn(): Resource<List<Gig>>
 

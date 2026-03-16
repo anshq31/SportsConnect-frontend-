@@ -2,6 +2,7 @@ package com.ansh.sportsapp.presentation.create_gig
 
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -9,7 +10,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -26,6 +29,8 @@ fun CreateGigScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    var sportExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(true) {
         viewModel.uiEvent.collectLatest { event ->
@@ -61,12 +66,43 @@ fun CreateGigScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            OutlinedTextField(
-                value = state.sport,
-                onValueChange = { viewModel.onEvent(CreateGigEvent.EnteredSport(it)) },
-                label = { Text("Sport (e.g. Basketball)") },
+
+            ExposedDropdownMenuBox(
+                expanded = sportExpanded,
+                onExpandedChange = {sportExpanded = !sportExpanded},
                 modifier = Modifier.fillMaxWidth()
-            )
+            ) {
+                OutlinedTextField(
+                    value = state.sport,
+                    onValueChange = {  },
+                    readOnly = true,
+                    label = { Text("Sport (e.g. Basketball)") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = sportExpanded) },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    modifier = Modifier.fillMaxWidth().menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = sportExpanded,
+                    onDismissRequest = {sportExpanded = false}
+                ) {
+                    viewModel.availableSports.forEach { (id,sportName)->
+                        DropdownMenuItem(
+                            text = { Text(sportName) },
+                            onClick = {
+                                viewModel.onEvent(CreateGigEvent.EnteredSport(sportName))
+                                sportExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
 
             OutlinedTextField(
                 value = state.location,

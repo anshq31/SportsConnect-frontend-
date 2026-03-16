@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ansh.sportsapp.domain.model.Gig
@@ -30,7 +31,8 @@ import com.ansh.sportsapp.presentation.home.GigInfoRow
 fun RequestCard(
     request: GigRequest,
     onAccept: () -> Unit,
-    onReject: () -> Unit
+    onReject: () -> Unit,
+    onClick : (Long)-> Unit
 ) {
     Card(
         modifier = Modifier
@@ -45,13 +47,18 @@ fun RequestCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable{ onClick(request.requesterId)}.padding(end = 8.dp)
+                ) {
                 Icon(Icons.Default.Person, contentDescription = null)
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
                         text = "@${request.requesterUsername}",
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        textDecoration = TextDecoration.Underline
                     )
                     Text(
                         text = "Wants to join",
@@ -447,6 +454,7 @@ fun ReceivedRequestsContent(
     state: GigDetailState,
     onAccept: (Long) -> Unit,
     onReject: (Long) -> Unit,
+    onClick: (Long) -> Unit,
     modifier: Modifier = Modifier
 ){
 
@@ -479,7 +487,8 @@ fun ReceivedRequestsContent(
                         RequestCard(
                             request = request,
                             onAccept = { onAccept(request.requestId) },
-                            onReject = { onReject(request.requestId) }
+                            onReject = { onReject(request.requestId) },
+                            onClick = onClick
                         )
                     }
                 }

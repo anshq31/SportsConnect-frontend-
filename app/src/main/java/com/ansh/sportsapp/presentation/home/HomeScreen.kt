@@ -62,6 +62,14 @@ fun HomeScreen(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
+
+            GigSearchBar(
+                sportQuery = state.sportQuery,
+                locationQuery = state.locationQuery,
+                onSportChange = viewModel::onSportQueryChange,
+                onLocationChange = viewModel::onLocationQueryChange,
+                onClearFilters = viewModel::clearFilters
+            )
         }
     ) { padding ->
 

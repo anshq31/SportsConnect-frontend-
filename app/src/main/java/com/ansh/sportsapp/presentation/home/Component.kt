@@ -1,8 +1,10 @@
 package com.ansh.sportsapp.presentation.home
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
@@ -20,9 +23,14 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -149,6 +157,132 @@ fun EmptyState(text: String) {
                 text = text,
                 style = MaterialTheme.typography.bodyLarge
             )
+        }
+    }
+}
+
+@Composable
+fun GigSearchBar(
+    sportQuery: String,
+    locationQuery: String,
+    onSportChange: (String) -> Unit,
+    onLocationChange: (String) -> Unit,
+    onClearFilters: () -> Unit,
+    modifier: Modifier = Modifier
+){
+    val hasActiveFilter = sportQuery.isNotBlank() || locationQuery.isNotBlank()
+
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 4.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = sportQuery,
+                    onValueChange = onSportChange,
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("Sport", style = MaterialTheme.typography.bodySmall) },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.SportsSoccer,
+                            contentDescription = null,
+                            modifier = modifier.size(18.dp)
+                        )
+                    },
+                    trailingIcon = {
+                        if (sportQuery.isNotBlank()){
+                            IconButton(
+                                onClick = {onSportChange("")},
+                                modifier = Modifier.size(18.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Close, contentDescription = "clear sport"
+                                )
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
+                    textStyle = MaterialTheme.typography.bodySmall
+                )
+
+                OutlinedTextField(
+                    value = locationQuery,
+                    onValueChange = onLocationChange,
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("Location", style = MaterialTheme.typography.bodySmall) },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.LocationOn,
+                            contentDescription = null,
+                            modifier = modifier.size(18.dp)
+                        )
+                    },
+                    trailingIcon = {
+                        if (locationQuery.isNotBlank()){
+                            IconButton(
+                                onClick = {onLocationChange("")},
+                                modifier = Modifier.size(18.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Close, contentDescription = "clear location"
+                                )
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
+                    textStyle = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            AnimatedVisibility(hasActiveFilter) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (sportQuery.isNotBlank()) {
+                        FilterChip(
+                            selected = true,
+                            onClick = { onSportChange("") },
+                            label = { Text(sportQuery, style = MaterialTheme.typography.labelSmall) },
+                            trailingIcon = {
+                                Icon(Icons.Default.Close, contentDescription = null,
+                                    modifier = Modifier.size(14.dp))
+                            }
+                        )
+                    }
+                    if (locationQuery.isNotBlank()) {
+                        FilterChip(
+                            selected = true,
+                            onClick = { onLocationChange("") },
+                            label = { Text(locationQuery, style = MaterialTheme.typography.labelSmall) },
+                            trailingIcon = {
+                                Icon(Icons.Default.Close, contentDescription = null,
+                                    modifier = Modifier.size(14.dp))
+                            }
+                        )
+                    }
+                    Spacer(Modifier.weight(1f))
+                    TextButton(
+                        onClick = onClearFilters,
+                        contentPadding = PaddingValues(horizontal = 8.dp)
+                    ) {
+                        Text("Clear all", style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            }
         }
     }
 }
