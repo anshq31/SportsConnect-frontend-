@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -27,6 +28,8 @@ fun RegisterScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collectLatest { event ->
@@ -133,7 +136,7 @@ fun RegisterScreen(
                             ),
                             keyboardActions = KeyboardActions(
                                 onDone = {
-                                    viewModel.onEvent(RegisterEvent.Register)
+                                   focusManager.clearFocus()
                                 }
                             ),
                             singleLine = true,
@@ -145,6 +148,7 @@ fun RegisterScreen(
 
                         Button(
                             onClick = { viewModel.onEvent(RegisterEvent.Register) },
+                            enabled = !state.isLoading,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(52.dp),

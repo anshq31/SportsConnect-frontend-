@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -53,19 +54,22 @@ fun ProfileScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("My Profile") },
+                title = { Text("My Profile", color = MaterialTheme.colorScheme.onSurface) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
                 actions = {
 
                     IconButton(onClick = { navController.navigate(Screen.EditProfile.route) }) {
-                        Icon(Icons.Default.Person, contentDescription = "Edit Profile")
+                        Icon(Icons.Default.Person, contentDescription = "Edit Profile", tint = MaterialTheme.colorScheme.primary)
                     }
 
                     IconButton(onClick = { viewModel.logOut() }) {
                         Icon(
                             Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "Logout"
+                            contentDescription = "Logout",
+                            tint = MaterialTheme.colorScheme.error
                         )
                     }
                 }
@@ -97,7 +101,9 @@ fun ProfileScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
 
@@ -109,10 +115,14 @@ fun ProfileScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = state.error ?: "Something went wrong",
-                                color = MaterialTheme.colorScheme.error
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Button(onClick = { viewModel.refresh() }) {
+                            Button(
+                                onClick = { viewModel.refresh() },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
                                 Text("Retry")
                             }
                         }
@@ -145,35 +155,36 @@ fun ProfileContent(profile: UserProfile, reviews: List<Review>, isReviewLoading:
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(26.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
-                        modifier = Modifier.size(72.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        modifier = Modifier.size(74.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = profile.username,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    RatingBar(rating = profile.overallRating)
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
+                    RatingBar(rating = profile.overallRating, highlightColor = MaterialTheme.colorScheme.tertiary)
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "%.1f / 5.0".format(profile.overallRating),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
                     )
                 }
             }
@@ -182,17 +193,25 @@ fun ProfileContent(profile: UserProfile, reviews: List<Review>, isReviewLoading:
         // --- EXPERIENCE ---
         if (profile.experience.isNotBlank()) {
             item {
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(2.dp)
+                ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = "Experience",
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = profile.experience,
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -202,11 +221,15 @@ fun ProfileContent(profile: UserProfile, reviews: List<Review>, isReviewLoading:
         // --- SKILLS ---
         if (profile.skills.isNotEmpty()) {
             item {
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = "Skills",
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -217,6 +240,10 @@ fun ProfileContent(profile: UserProfile, reviews: List<Review>, isReviewLoading:
                             profile.skills.forEach { skill ->
                                 AssistChip(
                                     onClick = {},
+                                    colors = AssistChipDefaults.assistChipColors(
+                                        containerColor = MaterialTheme.colorScheme.secondary.copy(.15f),
+                                        labelColor = MaterialTheme.colorScheme.secondary
+                                    ),
                                     label = { Text(skill) }
                                 )
                             }
@@ -231,6 +258,7 @@ fun ProfileContent(profile: UserProfile, reviews: List<Review>, isReviewLoading:
             Text(
                 text = "Reviews (${reviews.size})",
                 style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold
             )
         }
@@ -244,14 +272,19 @@ fun ProfileContent(profile: UserProfile, reviews: List<Review>, isReviewLoading:
                             .padding(24.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             }
 
             reviews.isEmpty() -> {
                 item(key = "reviews_empty") {
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    Card(modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -261,7 +294,7 @@ fun ProfileContent(profile: UserProfile, reviews: List<Review>, isReviewLoading:
                             Text(
                                 text = "No reviews yet",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurface.copy(0.6f)
                             )
                         }
                     }
@@ -282,7 +315,11 @@ fun ProfileContent(profile: UserProfile, reviews: List<Review>, isReviewLoading:
 
 @Composable
 fun ReviewCard(review: Review) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(1.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -291,6 +328,7 @@ fun ReviewCard(review: Review) {
             ) {
                 Text(
                     text = review.reviewerUsername,
+                    color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Medium
                 )
@@ -301,7 +339,7 @@ fun ReviewCard(review: Review) {
                 Text(
                     text = review.comment,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurface.copy(.7f)
                 )
             }
         }
@@ -309,7 +347,7 @@ fun ReviewCard(review: Review) {
 }
 
 @Composable
-fun RatingBar(rating: Double, starSize: Int = 24) {
+fun RatingBar(rating: Double, starSize: Int = 24,highlightColor : Color = MaterialTheme.colorScheme.tertiary) {
     Row {
         for (i in 1..5) {
             Icon(
@@ -320,7 +358,7 @@ fun RatingBar(rating: Double, starSize: Int = 24) {
                 },
                 contentDescription = null,
                 modifier = Modifier.size(starSize.dp),
-                tint = MaterialTheme.colorScheme.primary
+                tint = highlightColor
             )
         }
     }

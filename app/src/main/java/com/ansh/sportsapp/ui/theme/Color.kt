@@ -10,14 +10,23 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
-val SportsGreen = Color(0xFF00C853)
-val SportsGreenDark = Color(0xFF009624)
 
-val FieldGreen = Color(0xFF0F3D2E)
-val StadiumDark = Color(0xFF0B1F1A)
+val TextPrimaryLight = Color(0xFF0D1B1E)
+val TextPrimaryDark = Color(0xFFE6F4F1)
 
-val AccentOrange = Color(0xFFFF6D00)
-val AccentBlue = Color(0xFF2979FF)
+val IndiaBlue = Color(0xFF0D47A1)      // jersey performance blue
+val IndiaBlueLight = Color(0xFF1976D2)
 
-val SurfaceDark = Color(0xFF121212)
-val SurfaceLight = Color(0xFFF7F9F8)
+val SaffronEnergy = Color(0xFFFF6F00)  // action CTA energy
+val FieldGreen = Color(0xFF1B5E20)     // grounded sports green
+
+val TurfGreenLight = Color(0xFF4CAF50)
+
+val NeutralLightBg = Color(0xFFF4F6F8)
+val NeutralDarkBg = Color(0xFF0A192F)
+
+val CardLight = Color(0xFFFFFFFF)
+val CardDark = Color(0xFF112240)
+
+val TextDark = Color(0xFF0B1F33)
+val TextLight = Color(0xFFE6F1FF)

@@ -42,6 +42,9 @@ class RegisterViewModel @Inject constructor(
     }
 
     private fun register() {
+
+        if (state.value.isLoading) return
+
         val username = state.value.username
         val email = state.value.email
         val password = state.value.password

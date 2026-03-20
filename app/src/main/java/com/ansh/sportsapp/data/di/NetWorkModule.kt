@@ -16,7 +16,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetWorkModule {
-    private const val BASE_URL = "http://10.115.230.168:8080/"
+    private const val BASE_URL = " https://sportsconnect-c2po.onrender.com/"
     @Provides
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor{

@@ -1,21 +1,42 @@
 package com.ansh.sportsapp.presentation.gig_detail
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ansh.sportsapp.domain.model.GigRequest
 import com.ansh.sportsapp.domain.model.GigStatus
+import com.ansh.sportsapp.presentation.my_gigs.EmptyState
+import com.ansh.sportsapp.presentation.my_gigs.ErrorState
 
 @Composable
 fun GigStatusIndicator(
@@ -119,5 +140,114 @@ fun StatusButton(
         )
     ) {
         Text(text)
+    }
+}
+
+@Composable
+fun ReceivedRequestsContent(
+    state: GigDetailState,
+    onAccept: (Long) -> Unit,
+    onReject: (Long) -> Unit,
+    onClick: (Long) -> Unit,
+    modifier: Modifier = Modifier
+){
+
+    Box(modifier = modifier.fillMaxWidth()){
+        when{
+            state.isRequestsLoading->{
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+            state.error!=null && state.requests.isEmpty()->{
+                ErrorState(
+                    message = state.error,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+            state.requests.isEmpty()->{
+                EmptyState(
+                    title = "No Pending Requests",
+                    subtitle = "Requests to join your gigs will appear here",
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+            else->{
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    state.requests.forEach { request ->
+                        RequestCard(
+                            request = request,
+                            onAccept = { onAccept(request.requestId) },
+                            onReject = { onReject(request.requestId) },
+                            onClick = onClick
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun RequestCard(
+    request: GigRequest,
+    onAccept: () -> Unit,
+    onReject: () -> Unit,
+    onClick : (Long)-> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable{ onClick(request.requesterId)}.padding(end = 8.dp)
+            ) {
+                Icon(Icons.Default.Person, contentDescription = null)
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = "@${request.requesterUsername}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        textDecoration = TextDecoration.Underline
+                    )
+                    Text(
+                        text = "Wants to join",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+
+            Row {
+                IconButton(onClick = onReject) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Reject",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+                IconButton(onClick = onAccept) {
+                    Icon(
+                        Icons.Default.Check,
+                        contentDescription = "Accept",
+                        tint = Color(0xFF4CAF50) // Green
+                    )
+                }
+            }
+        }
     }
 }

@@ -13,57 +13,56 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = SportsGreen,
-    onPrimary = Color.Black,
 
-    secondary = AccentBlue,
-    onSecondary = Color.White,
+    primary = IndiaBlueLight,
+    onPrimary = Color.White,
 
-    tertiary = AccentOrange,
+    secondary = TurfGreenLight,
+    onSecondary = Color.Black,
+
+    tertiary = SaffronEnergy,
     onTertiary = Color.Black,
 
-    background = StadiumDark,
-    onBackground = Color.White,
+    background = NeutralDarkBg,
+    onBackground = TextLight,
 
-    surface = SurfaceDark,
-    onSurface = Color.White
+    surface = CardDark,
+    onSurface = TextLight,
+
+    error = Color(0xFFFF5252),
+    onError = Color.Black
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = SportsGreen,
+
+    primary = IndiaBlue,
     onPrimary = Color.White,
 
-    secondary = AccentBlue,
+    secondary = FieldGreen,
     onSecondary = Color.White,
 
-    tertiary = AccentOrange,
+    tertiary = SaffronEnergy,
     onTertiary = Color.White,
 
-    background = SurfaceLight,
-    onBackground = Color(0xFF1A1A1A),
+    background = NeutralLightBg,
+    onBackground = TextDark,
 
-    surface = Color.White,
-    onSurface = Color(0xFF1A1A1A)
+    surface = CardLight,
+    onSurface = TextDark,
+
+    error = Color(0xFFD32F2F),
+    onError = Color.White
 )
 
 @Composable
 fun SportsAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    val colors = if (darkTheme) DarkColorScheme else LightColorScheme
 
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = colors,
         typography = Typography,
         shapes = SportsShapes,
         content = content
