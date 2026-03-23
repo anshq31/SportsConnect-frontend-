@@ -49,7 +49,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    private fun loadReviews(userId : Long){
+    private suspend fun loadReviews(userId : Long){
         viewModelScope.launch {
             _state.update { it.copy(isReviewLoading = true) }
             when(val result = getReviewUseCase(userId)){

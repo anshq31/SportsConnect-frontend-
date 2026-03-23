@@ -1,5 +1,6 @@
 package com.ansh.sportsapp.data.repository
 
+import android.util.Log
 import com.ansh.sportsapp.common.Resource
 import com.ansh.sportsapp.data.remote.SportsApi
 import com.ansh.sportsapp.data.remote.dto.gig.CreateGigRequestDto
@@ -38,12 +39,14 @@ class GigRepositoryImpl @Inject constructor(
     override suspend fun getGigParticipatedIn(): Resource<List<Gig>> {
         return try {
             val response = api.getGigParticipatedIn()
-
-            val gigs = response.content.map { it.toDomain() }
+            Log.d("REPO", "getGigParticipatedIn raw count: ${response.content.size}")
+            val gigs = response.content.map {
+                Log.d("REPO", "mapping gig: ${it.id}")
+                it.toDomain() }
 
             Resource.Success(gigs)
         } catch (e : Exception){
-            e.printStackTrace()
+            Log.e("REPO", "getGigParticipatedIn FAILED: ${e.message}", e)
             Resource.Error("Failed to load gigs: ${e.localizedMessage}")
         }
     }

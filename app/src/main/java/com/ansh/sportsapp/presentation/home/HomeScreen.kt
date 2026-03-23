@@ -32,9 +32,7 @@ fun HomeScreen(
     val pullToRefreshState = rememberPullToRefreshState()
     var isRefreshing by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        viewModel.refresh()
-    }
+
 
     LaunchedEffect(state.isLoading) {
         if (!state.isLoading && isRefreshing) {

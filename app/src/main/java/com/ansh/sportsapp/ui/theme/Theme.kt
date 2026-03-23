@@ -13,26 +13,35 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
+    primary          = SportGreen,
+    onPrimary        = Color(0xFF0A0C0F),
+    primaryContainer = SportGreenContainer,
+    onPrimaryContainer = SportGreen,
 
-    primary = IndiaBlueLight,
-    onPrimary = Color.White,
+    secondary        = TertiaryIndigo,
+    onSecondary      = Color.White,
+    secondaryContainer = TertiaryContainer,
+    onSecondaryContainer = TertiaryIndigo,
 
-    secondary = TurfGreenLight,
-    onSecondary = Color.Black,
+    tertiary         = WarningAmber,
+    onTertiary       = Color(0xFF0A0C0F),
+    tertiaryContainer = WarningContainer,
+    onTertiaryContainer = WarningAmber,
 
-    tertiary = SaffronEnergy,
-    onTertiary = Color.Black,
+    error            = ErrorRed,
+    errorContainer   = ErrorContainer,
+    onError          = Color.White,
 
-    background = NeutralDarkBg,
-    onBackground = TextLight,
-
-    surface = CardDark,
-    onSurface = TextLight,
-
-    error = Color(0xFFFF5252),
-    onError = Color.Black
+    background       = BackgroundDark,
+    onBackground     = OnSurface,
+    surface          = SurfaceDark,
+    onSurface        = OnSurface,
+    surfaceVariant   = SurfaceVariantDark,
+    onSurfaceVariant = OnSurfaceVariant,
+    outline          = Outline,
+    outlineVariant   = OutlineVariant,
+    scrim            = Color(0xFF000000),
 )
-
 private val LightColorScheme = lightColorScheme(
 
     primary = IndiaBlue,

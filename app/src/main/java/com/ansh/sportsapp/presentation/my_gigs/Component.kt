@@ -259,8 +259,8 @@ fun JoinedGigsContent(
             CenterLoading()
         }
 
-        state.error != null && state.joinedGigs.isEmpty() -> {
-            ErrorState(state.error)
+        state.joinedGigError != null && state.joinedGigs.isEmpty() -> {
+            ErrorState(state.joinedGigError)
         }
 
         state.joinedGigs.isEmpty() -> {
@@ -348,8 +348,8 @@ fun CreatedGigContent(
             CenterLoading()
         }
 
-        state.error != null && state.createdGig.isEmpty() -> {
-            ErrorState(state.error)
+        state.createdGigError != null && state.createdGig.isEmpty() -> {
+            ErrorState(state.createdGigError)
         }
 
         state.createdGig.isEmpty() -> {
@@ -389,4 +389,3 @@ fun CenterLoading() {
         CircularProgressIndicator()
     }
 }
-

@@ -34,17 +34,6 @@ fun MyGigsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var selectedTabIndex by remember { mutableStateOf(0) }
 
-    val lifecycleOwner = LocalLifecycleOwner.current
-
-    LaunchedEffect(lifecycleOwner) {
-        lifecycleOwner.lifecycle.repeatOnLifecycle(
-            androidx.lifecycle.Lifecycle.State.RESUMED
-        ){
-            viewModel.loadCreatedGigs()
-            viewModel.loadJoinedGigs()
-        }
-    }
-
     LaunchedEffect(true) {
         viewModel.uiEvent.collectLatest { event ->
             when (event) {
@@ -80,47 +69,47 @@ fun MyGigsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-               TabRow(
-                   selectedTabIndex = selectedTabIndex,
-                   modifier = Modifier.fillMaxWidth()
-               ) {
-                   Tab(
-                       selected = selectedTabIndex == 0,
-                       onClick = { selectedTabIndex = 0 },
-                       text = {
-                           Text(
-                               text = "Created (${state.createdGig.size})",
-                               style = MaterialTheme.typography.labelLarge
-                           )
-                       }
-                   )
-                   Tab(
-                       selected = selectedTabIndex == 1,
-                       onClick = { selectedTabIndex = 1 },
-                       text = {
-                           Text(
-                               text = "Joined (${state.joinedGigs.size})",
-                               style = MaterialTheme.typography.labelLarge
-                           )
-                       }
-                   )
-               }
-               Box(
-                   modifier = Modifier
-                       .fillMaxSize()
-                       .padding(horizontal = 16.dp)
-               ) {
-                   when (selectedTabIndex) {
-                       0->CreatedGigContent(
-                           state = state,
-                           navController = navController,
-                       )
-                       1 -> JoinedGigsContent(
-                           state = state,
-                           navController = navController,
-                       )
-                   }
-               }
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Tab(
+                    selected = selectedTabIndex == 0,
+                    onClick = { selectedTabIndex = 0 },
+                    text = {
+                        Text(
+                            text = "Created (${state.createdGig.size})",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                )
+                Tab(
+                    selected = selectedTabIndex == 1,
+                    onClick = { selectedTabIndex = 1 },
+                    text = {
+                        Text(
+                            text = "Joined (${state.joinedGigs.size})",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+            ) {
+                when (selectedTabIndex) {
+                    0->CreatedGigContent(
+                        state = state,
+                        navController = navController,
+                    )
+                    1 -> JoinedGigsContent(
+                        state = state,
+                        navController = navController,
+                    )
+                }
+            }
         }
     }
 }

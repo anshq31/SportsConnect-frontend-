@@ -30,16 +30,13 @@ class LoginViewModel @Inject constructor(
     }
 
     fun onEvent(event: LoginEvent){
-        Log.d("LOGIN_VM", "Event received: $event | vm=${this.hashCode()}")
         when(event){
             is LoginEvent.EnteredUsername ->{
                 _state.update { it.copy(username = event.value) }
-                println("Event received: EnteredUsername(value=${event.value}) | vm=${hashCode()}")
             }
 
             is LoginEvent.EnteredPassword -> {
                 _state.update { it.copy(password = event.value) }
-                println("Event received: EnteredPassword(value=${event.value}) | vm=${hashCode()}")
             }
 
             is LoginEvent.Login -> {

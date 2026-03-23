@@ -36,7 +36,7 @@ class MyGigsViewModel @Inject constructor(
 
     fun loadJoinedGigs(){
         viewModelScope.launch {
-            _state.update { it.copy(isJoinedGigsLoading = true, error = null) }
+            _state.update { it.copy(isJoinedGigsLoading = true, joinedGigError = null) }
 
             when(val result = joinedGigUseCase()){
                 is Resource.Success->{
@@ -51,7 +51,7 @@ class MyGigsViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isJoinedGigsLoading = false,
-                            error = result.message ?: "Failed to load gigs"
+                            joinedGigError = result.message ?: "Failed to load gigs"
                         )
                     }
                 }
@@ -62,7 +62,7 @@ class MyGigsViewModel @Inject constructor(
 
     fun loadCreatedGigs(){
         viewModelScope.launch {
-            _state.update { it.copy(isCreatedGigsLoading = true, error = null) }
+            _state.update { it.copy(isCreatedGigsLoading = true, joinedGigError = null) }
 
             when(val result = createdGigUseCase()){
                 is Resource.Success->{
@@ -77,7 +77,7 @@ class MyGigsViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isCreatedGigsLoading = false,
-                            error = result.message ?: "Failed to load gigs"
+                            joinedGigError = result.message ?: "Failed to load gigs"
                         )
                     }
                 }

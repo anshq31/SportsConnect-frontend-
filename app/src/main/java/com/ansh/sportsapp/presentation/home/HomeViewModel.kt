@@ -6,6 +6,7 @@ import com.ansh.sportsapp.common.Resource
 import com.ansh.sportsapp.domain.usecase.gig.GetActiveGigUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -27,6 +28,8 @@ class HomeViewModel @Inject constructor(
     private val _sportQuery = MutableStateFlow("")
     private val _locationQuery = MutableStateFlow("")
 
+    private var loadGigJob: Job? = null
+
     init {
         viewModelScope.launch {
             combine(_sportQuery,_locationQuery){sport,location->
@@ -41,7 +44,9 @@ class HomeViewModel @Inject constructor(
     }
 
     fun loadGigs(sport : String = "", location : String = ""){
-        viewModelScope.launch {
+        loadGigJob?.cancel()
+
+        loadGigJob = viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
 
             when(val result = activeGigUseCase(

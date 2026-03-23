@@ -8,7 +8,8 @@ data class MyGigsState (
     val createdGig : List<Gig> = emptyList(),
     val isCreatedGigsLoading : Boolean = false,
     val isJoinedGigsLoading : Boolean = false,
-    val error: String? = null
+    val createdGigError: String? = null,
+    val joinedGigError: String? = null
 ){
     val isLoading : Boolean
         get() = isCreatedGigsLoading || isJoinedGigsLoading

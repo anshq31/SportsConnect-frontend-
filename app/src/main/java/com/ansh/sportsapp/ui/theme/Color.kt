@@ -30,3 +30,34 @@ val CardDark = Color(0xFF112240)
 
 val TextDark = Color(0xFF0B1F33)
 val TextLight = Color(0xFFE6F1FF)
+
+// SportsConnect Color Palette
+
+val SportGreen        = Color(0xFF00E676)
+val SportGreenDark    = Color(0xFF00B85A)
+val SportGreenLight   = Color(0xFF00FF8A)
+val SportGreenContainer = Color(0x1F00E676)
+
+// Backgrounds
+val BackgroundDark    = Color(0xFF0A0C0F)
+val SurfaceDark       = Color(0xFF0F1117)
+val SurfaceVariantDark = Color(0xFF181B24)
+val ElevatedDark      = Color(0xFF1E2230)
+
+// Text
+val OnSurface         = Color(0xFFE8EAF0)
+val OnSurfaceVariant  = Color(0xFFA8B3CF)
+val OnSurfaceHint     = Color(0xFF6B7280)
+val OnSurfaceDisabled = Color(0xFF3D4455)
+
+// Semantic
+val ErrorRed          = Color(0xFFFF3B5C)
+val ErrorContainer    = Color(0x1FFF3B5C)
+val WarningAmber      = Color(0xFFFFB700)
+val WarningContainer  = Color(0x1FFFB700)
+val TertiaryIndigo    = Color(0xFF818CF8)
+val TertiaryContainer = Color(0x1F818CF8)
+
+// Borders
+val OutlineVariant    = Color(0x0FFFFFFF)
+val Outline           = Color(0x1AFFFFFF)
