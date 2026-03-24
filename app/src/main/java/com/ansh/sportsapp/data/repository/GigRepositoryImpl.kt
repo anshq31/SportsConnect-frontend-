@@ -11,56 +11,65 @@ import com.ansh.sportsapp.domain.model.GigRequest
 import com.ansh.sportsapp.domain.model.GigStatus
 import com.ansh.sportsapp.domain.model.Participant
 import com.ansh.sportsapp.domain.repository.GigRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
 
 class GigRepositoryImpl @Inject constructor(
-    private val api: SportsApi
+    private val api: SportsApi,
 ) : GigRepository{
     override suspend fun getActiveGigs(sport: String?, location: String?): Resource<List<Gig>> {
-        return try {
-            // Because of AuthInterceptor, the token is added automatically!
-            val response = api.getActiveGigs(
-                sport = sport?.ifBlank { null },
-                location = location?.ifBlank { null }
-            )
+        return withContext(Dispatchers.IO){
+            try {
+                // Because of AuthInterceptor, the token is added automatically!
+                val response = api.getActiveGigs(
+                    sport = sport?.ifBlank { null },
+                    location = location?.ifBlank { null }
+                )
 
-            // Map DTOs to Domain Models
-            val gigs = response.content.map { it.toDomain() }
+                // Map DTOs to Domain Models
+                val gigs = response.content.map { it.toDomain() }
 
-            Resource.Success(gigs)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Resource.Error("Failed to load gigs: ${e.localizedMessage}")
+                Resource.Success(gigs)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Resource.Error("Failed to load gigs: ${e.localizedMessage}")
+            }
         }
     }
 
     override suspend fun getGigParticipatedIn(): Resource<List<Gig>> {
-        return try {
-            val response = api.getGigParticipatedIn()
-            Log.d("REPO", "getGigParticipatedIn raw count: ${response.content.size}")
-            val gigs = response.content.map {
-                Log.d("REPO", "mapping gig: ${it.id}")
-                it.toDomain() }
+        return withContext(Dispatchers.IO){
+            try {
+                val response = api.getGigParticipatedIn()
+                Log.d("REPO", "getGigParticipatedIn raw count: ${response.content.size}")
+                val gigs = response.content.map {
+                    Log.d("REPO", "mapping gig: ${it.id}")
+                    it.toDomain() }
 
-            Resource.Success(gigs)
-        } catch (e : Exception){
-            Log.e("REPO", "getGigParticipatedIn FAILED: ${e.message}", e)
-            Resource.Error("Failed to load gigs: ${e.localizedMessage}")
+                Resource.Success(gigs)
+            } catch (e : Exception){
+                Log.e("REPO", "getGigParticipatedIn FAILED: ${e.message}", e)
+                Resource.Error("Failed to load gigs: ${e.localizedMessage}")
+            }
         }
     }
 
     override suspend fun getGigByGigMaster(): Resource<List<Gig>> {
-        return try {
-            val response = api.getGigByGigMaster()
+         return withContext(Dispatchers.IO){
+             try {
+                val response = api.getGigByGigMaster()
 
-            val gigs = response.content.map { it.toDomain() }
+                val gigs = response.content.map { it.toDomain() }
 
-            Resource.Success(gigs)
-        }catch (e : Exception){
-            e.printStackTrace()
-            Resource.Error("Failed to load gigs: ${e.localizedMessage}")
+                Resource.Success(gigs)
+            }catch (e : Exception){
+                e.printStackTrace()
+                Resource.Error("Failed to load gigs: ${e.localizedMessage}")
+            }
         }
     }
 
@@ -70,32 +79,36 @@ class GigRepositoryImpl @Inject constructor(
         dateTime: String,
         playersNeeded: Int
     ): Resource<Boolean> {
-        return try {
-            val request = CreateGigRequestDto(
-                sport,
-                location,
-                dateTime,
-                playersNeeded
-            )
-            api.createGig(request)
-            Resource.Success(true)
-        } catch (e: HttpException) {
-            Resource.Error(e.message() ?: "Failed to create gig")
-        } catch (e: IOException) {
-            Resource.Error("Network error. Check connection.")
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Resource.Error("Unknown error: ${e.localizedMessage}")
+        return withContext(Dispatchers.IO){
+            try {
+                val request = CreateGigRequestDto(
+                    sport,
+                    location,
+                    dateTime,
+                    playersNeeded
+                )
+                api.createGig(request)
+                Resource.Success(true)
+            } catch (e: HttpException) {
+                Resource.Error(e.message() ?: "Failed to create gig")
+            } catch (e: IOException) {
+                Resource.Error("Network error. Check connection.")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Resource.Error("Unknown error: ${e.localizedMessage}")
+            }
         }
     }
 
     override suspend fun getGigById(gigId: Long): Resource<Gig> {
-        return try {
-            val dto = api.getGigById(gigId)
-            Resource.Success(dto.toDomain())
-        }catch (e: Exception){
-            e.printStackTrace()
-            Resource.Error("Failed to load gig details")
+        return withContext(Dispatchers.IO){
+            try {
+                val dto = api.getGigById(gigId)
+                Resource.Success(dto.toDomain())
+            }catch (e: Exception){
+                e.printStackTrace()
+                Resource.Error("Failed to load gig details")
+            }
         }
     }
 
@@ -114,13 +127,15 @@ class GigRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getMyGigRequests(): Resource<List<GigRequest>> {
-        return try {
-            val response = api.getMyGigRequests()
-            val requests = response.content.map { it.toDomain() }
-            Resource.Success(requests)
-        }catch (e: Exception){
-            e.printStackTrace()
-            Resource.Error("Failed to load requests: ${e.localizedMessage}")
+        return withContext(Dispatchers.IO){
+            try {
+                val response = api.getMyGigRequests()
+                val requests = response.content.map { it.toDomain() }
+                Resource.Success(requests)
+            }catch (e: Exception){
+                e.printStackTrace()
+                Resource.Error("Failed to load requests: ${e.localizedMessage}")
+            }
         }
     }
 
@@ -146,8 +161,14 @@ class GigRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun completeGig(gigId: Long): Gig {
-        return api.completeGig(gigId).toDomain()
+    override suspend fun completeGig(gigId: Long): Resource<Gig> {
+        return withContext(Dispatchers.IO) {
+            try {
+                Resource.Success(api.completeGig(gigId).toDomain())
+            } catch (e: Exception) {
+                Resource.Error("Failed to complete gig")
+            }
+        }
     }
 
     private fun GigDto.toDomain(): Gig {
@@ -157,7 +178,7 @@ class GigRepositoryImpl @Inject constructor(
             location = location,
             dateTime = dateTime,
             playersNeeded = playersNeeded,
-            gigMasterUsername = gigMasterUsername,
+            gigMasterUsername = gigMasterUsername ?: "Unknown",
             isOwner = isOwner,
             isParticipant = isParticipant,
             requestStatus = requestStatus,

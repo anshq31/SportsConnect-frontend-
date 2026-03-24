@@ -24,6 +24,6 @@ interface GigRepository {
     suspend fun acceptRequest(requestId: Long): Resource<Boolean>
     suspend fun rejectRequest(requestId: Long): Resource<Boolean>
 
-    suspend fun completeGig(gigId: Long): Gig
+    suspend fun completeGig(gigId: Long): Resource<Gig>
 
 }

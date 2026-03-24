@@ -19,50 +19,60 @@ class TokenAuthenticator @Inject constructor(
 
     private val lock = Any()
 
-    override fun authenticate(route : Route?, response : Response ): Request? {
 
-        synchronized(lock){
+    override fun authenticate(route : Route?, response : Response ): Request? {
+        synchronized(lock = lock){
             if (response.code != 401) return null
             if(response.request.url.encodedPath.contains("/api/auth/refresh")) return null
-            if (responseCount(response) >= 2)return null
+            if (responseCount(response) >= 3){
+                Log.d("TOKEN_AUTH", "Giving up: responseCount >= 2")
+                return null
+            }
 
             val requestToken = response.request.header("Authorization")
                 ?.removePrefix("Bearer ")
                 ?.trim()
 
-            val latestAccessToken = runBlocking { authPreferences.accessToken.first() }
+            synchronized(lock){
 
-            // If another request already refreshed the token, just retry with the latest token.
-            if (!latestAccessToken.isNullOrBlank() && latestAccessToken != requestToken) {
-                return response.request.newBuilder()
-                    .header("Authorization", "Bearer $latestAccessToken")
-                    .build()
-            }
+                val latestAccessToken = runBlocking { authPreferences.accessToken.first() }
+                Log.d("TOKEN_AUTH", "requestToken=${requestToken?.takeLast(10)}, latestToken=${latestAccessToken?.takeLast(10)}")
 
-            val refreshToken = runBlocking {
-                authPreferences.refreshToken.first()
-            } ?: return null
 
-            return try {
-                val refreshResponse = runBlocking {
-                    api.get().refreshToken(RefreshRequestDto(refreshToken))
-                }
-
-                runBlocking {
-                    authPreferences.saveAuthData(
-                        accessToken = refreshResponse.accessToken,
-                        refreshToken = refreshResponse.refreshToken,
-                        userId = refreshResponse.id.toString(),
-                        username = refreshResponse.username
-                    )
-
-                    response.request.newBuilder()
-                        .header("Authorization", "Bearer ${refreshResponse.accessToken}")
+                // If another request already refreshed the token, just retry with the latest token.
+                if (!latestAccessToken.isNullOrBlank() && latestAccessToken != requestToken) {
+                    Log.d("TOKEN_AUTH", "Token already refreshed, retrying with latest token")
+                    return response.request.newBuilder()
+                        .header("Authorization", "Bearer $latestAccessToken")
                         .build()
                 }
-            }catch (e : Exception) {
-                runBlocking { authPreferences.clearAuthData() }
-                null
+
+                val refreshToken = runBlocking {
+                    authPreferences.refreshToken.first()
+                } ?: return null
+
+                return try {
+                    val refreshResponse = runBlocking {
+                        api.get().refreshToken(RefreshRequestDto(refreshToken))
+                    }
+
+                    runBlocking {
+                        authPreferences.saveAuthData(
+                            accessToken = refreshResponse.accessToken,
+                            refreshToken = refreshResponse.refreshToken,
+                            userId = refreshResponse.id.toString(),
+                            username = refreshResponse.username
+                        )
+
+                        response.request.newBuilder()
+                            .header("Authorization", "Bearer ${refreshResponse.accessToken}")
+                            .build()
+                    }
+                }catch (e : Exception) {
+                    Log.e("TOKEN_AUTH", "Refresh failed", e)
+                    runBlocking { authPreferences.clearAuthData() }
+                    null
+                }
             }
         }
     }

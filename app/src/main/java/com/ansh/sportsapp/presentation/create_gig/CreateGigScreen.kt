@@ -1,24 +1,24 @@
 package com.ansh.sportsapp.presentation.create_gig
 
-
+import androidx.compose.animation.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.ansh.sportsapp.presentation.auth.login.SportPrimaryButton
+import com.ansh.sportsapp.ui.theme.*
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,120 +30,160 @@ fun CreateGigScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var sportExpanded by remember { mutableStateOf(false) }
-
     LaunchedEffect(true) {
         viewModel.uiEvent.collectLatest { event ->
             when (event) {
-                is CreateGigUiEvent.GigCreated -> {
-                    // Go back to home and refresh
-                    navController.popBackStack()
-                }
-                is CreateGigUiEvent.ShowSnackbar -> {
-                    snackbarHostState.showSnackbar(event.message)
-                }
+                is CreateGigUiEvent.GigCreated -> navController.popBackStack()
+                is CreateGigUiEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
             }
         }
     }
 
     Scaffold(
+        containerColor = BackgroundDark,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = { Text("Create New Gig") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
+            CreateGigTopBar(onBack = { navController.popBackStack() })
         }
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            ExposedDropdownMenuBox(
-                expanded = sportExpanded,
-                onExpandedChange = {sportExpanded = !sportExpanded},
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = state.sport,
-                    onValueChange = {  },
-                    readOnly = true,
-                    label = { Text("Sport (e.g. Basketball)") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = sportExpanded) },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    modifier = Modifier.fillMaxWidth().menuAnchor()
+            // ── Step 1: Sport ─────────────────────────────────────────
+            SectionCard {
+                SportChipSelector(
+                    sports = viewModel.availableSports,
+                    selected = state.sport,
+                    onSelect = { viewModel.onEvent(CreateGigEvent.EnteredSport(it)) }
                 )
-                ExposedDropdownMenu(
-                    expanded = sportExpanded,
-                    onDismissRequest = {sportExpanded = false}
-                ) {
-                    viewModel.availableSports.forEach { (id,sportName)->
-                        DropdownMenuItem(
-                            text = { Text(sportName) },
-                            onClick = {
-                                viewModel.onEvent(CreateGigEvent.EnteredSport(sportName))
-                                sportExpanded = false
-                            }
+            }
+
+            // ── Step 2: Location ──────────────────────────────────────
+            SectionCard {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    StepSectionHeader(2, "Location", Icons.Default.LocationOn)
+                    GigFormField(
+                        value = state.location,
+                        onValueChange = { viewModel.onEvent(CreateGigEvent.EnteredLocation(it)) },
+                        label = "VENUE",
+                        placeholder = "e.g. Central Park, Court 3",
+                        icon = Icons.Default.LocationOn
+                    )
+                }
+            }
+
+            // ── Step 3: Date & Time ───────────────────────────────────
+            SectionCard {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    StepSectionHeader(3, "Schedule", Icons.Default.Event)
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        GigFormField(
+                            value = state.date,
+                            onValueChange = { viewModel.onEvent(CreateGigEvent.EnteredDate(it)) },
+                            label = "DATE",
+                            placeholder = "2026-12-31",
+                            icon = Icons.Default.DateRange,
+                            modifier = Modifier.weight(1f)
+                        )
+                        GigFormField(
+                            value = state.time,
+                            onValueChange = { viewModel.onEvent(CreateGigEvent.EnteredTime(it)) },
+                            label = "TIME",
+                            placeholder = "18:30",
+                            icon = Icons.Default.Schedule,
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }
             }
 
+            // ── Step 4: Players ───────────────────────────────────────
+            SectionCard {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    StepSectionHeader(4, "Squad Size", Icons.Default.Group)
 
-            OutlinedTextField(
-                value = state.location,
-                onValueChange = { viewModel.onEvent(CreateGigEvent.EnteredLocation(it)) },
-                label = { Text("Location") },
-                modifier = Modifier.fillMaxWidth()
-            )
+                    // Quick select buttons
+                    val quickValues = listOf(2, 4, 6, 8, 10, 12)
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        quickValues.forEach { n ->
+                            val isSelected = state.players == n.toString()
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(
+                                        if (isSelected) SportGreenContainer else ElevatedDark
+                                    )
+                                    .border(
+                                        1.dp,
+                                        if (isSelected) SportGreen.copy(alpha = 0.5f) else OutlineVariant,
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable {
+                                        viewModel.onEvent(CreateGigEvent.EnteredPlayers(n.toString()))
+                                    }
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "$n",
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                    ),
+                                    color = if (isSelected) SportGreen else OnSurfaceHint
+                                )
+                            }
+                        }
+                    }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = state.date,
-                    onValueChange = { viewModel.onEvent(CreateGigEvent.EnteredDate(it)) },
-                    label = { Text("Date") },
-                    modifier = Modifier.weight(1f),
-                    placeholder = { Text("2025-12-31") }
-                )
-                OutlinedTextField(
-                    value = state.time,
-                    onValueChange = { viewModel.onEvent(CreateGigEvent.EnteredTime(it)) },
-                    label = { Text("Time") },
-                    modifier = Modifier.weight(1f),
-                    placeholder = { Text("18:30") }
-                )
+                    GigFormField(
+                        value = state.players,
+                        onValueChange = { viewModel.onEvent(CreateGigEvent.EnteredPlayers(it)) },
+                        label = "OR ENTER CUSTOM NUMBER",
+                        placeholder = "e.g. 5",
+                        icon = Icons.Default.Person,
+                        keyboardType = KeyboardType.Number
+                    )
+                }
             }
 
-            OutlinedTextField(
-                value = state.players,
-                onValueChange = { viewModel.onEvent(CreateGigEvent.EnteredPlayers(it)) },
-                label = { Text("Players Needed") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
+            Spacer(Modifier.height(4.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
+            // ── Submit ────────────────────────────────────────────────
+            SportPrimaryButton(
+                text = "CREATE GIG",
                 onClick = { viewModel.onEvent(CreateGigEvent.Submit) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Create Gig")
-            }
+                isLoading = state.isLoading,
+                enabled = state.sport.isNotBlank() &&
+                        state.location.isNotBlank() &&
+                        state.date.isNotBlank() &&
+                        state.time.isNotBlank() &&
+                        state.players.isNotBlank()
+            )
+
+            Spacer(Modifier.height(8.dp))
         }
+    }
+}
+
+// ─── Section card wrapper ─────────────────────────────────────────────────────
+
+@Composable
+private fun SectionCard(content: @Composable () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(SurfaceVariantDark)
+            .border(1.dp, OutlineVariant, RoundedCornerShape(16.dp))
+            .padding(16.dp)
+    ) {
+        content()
     }
 }

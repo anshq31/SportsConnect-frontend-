@@ -2,6 +2,7 @@ package com.ansh.sportsapp.data.di
 
 import com.ansh.sportsapp.data.local.TokenAuthenticator
 import com.ansh.sportsapp.data.remote.AuthInterceptor
+import com.ansh.sportsapp.data.remote.SportsApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

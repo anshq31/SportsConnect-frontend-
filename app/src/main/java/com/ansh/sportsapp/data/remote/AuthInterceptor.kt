@@ -13,7 +13,6 @@ class AuthInterceptor @Inject constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val path = request.url.encodedPath
-
         if (path.contains("/api/auth/")) {
             return chain.proceed(request)
         }

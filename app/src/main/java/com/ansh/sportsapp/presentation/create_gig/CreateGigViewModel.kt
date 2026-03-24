@@ -1,5 +1,6 @@
 package com.ansh.sportsapp.presentation.create_gig
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ansh.sportsapp.common.Resource
@@ -63,6 +64,7 @@ class CreateGigViewModel @Inject constructor(
                 }
                 is Resource.Error -> {
                     _state.update { it.copy(isLoading = false) }
+                    Log.d("CREATE_GIG", "Error creating gig: ${result.message.toString()}")
                     _uiEvent.emit(CreateGigUiEvent.ShowSnackbar(result.message ?: "Failed"))
                 }
                 is Resource.Loading -> Unit

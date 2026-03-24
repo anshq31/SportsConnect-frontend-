@@ -1,23 +1,22 @@
 package com.ansh.sportsapp.presentation.edit_user
 
-
+import androidx.compose.animation.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.ansh.sportsapp.ui.theme.*
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -44,41 +43,68 @@ fun EditProfileScreen(
     }
 
     Scaffold(
+        containerColor = BackgroundDark,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = { Text("Edit Profile") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
+            EditProfileTopBar(
+                username = null, // Will be loaded
+                onBack = { navController.popBackStack() }
             )
         }
     ) { padding ->
         when {
             state.isLoading -> {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
+                    modifier = Modifier.fillMaxSize().padding(padding),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        CircularProgressIndicator(
+                            color = SportGreen,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Text(
+                            "Loading profile...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = OnSurfaceHint
+                        )
+                    }
                 }
             }
 
             state.error != null && !state.isLoading -> {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
+                    modifier = Modifier.fillMaxSize().padding(padding),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = state.error ?: "Something went wrong",
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.padding(32.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(CircleShape)
+                                .background(ErrorContainer)
+                                .border(1.dp, ErrorRed.copy(alpha = 0.3f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.ErrorOutline, null,
+                                tint = ErrorRed, modifier = Modifier.size(28.dp)
+                            )
+                        }
+                        Text(
+                            state.error ?: "Something went wrong",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = OnSurfaceHint
+                        )
+                    }
                 }
             }
 
@@ -87,73 +113,107 @@ fun EditProfileScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
-                        .padding(horizontal = 16.dp)
-                        .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Spacer(modifier = Modifier.height(8.dp))
 
-                    // --- EXPERIENCE ---
-                    Text(
-                        text = "Experience",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    OutlinedTextField(
-                        value = state.experience,
-                        onValueChange = { viewModel.onExperienceChange(it) },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Describe your sports experience...") },
-                        minLines = 4,
-                        maxLines = 8
-                    )
-
-                    // --- SKILLS ---
-                    Text(
-                        text = "Skills",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "Select the sports you play",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    // ── Experience section ────────────────────────────
+                    EditSectionCard(
+                        title = "Experience",
+                        icon = Icons.Default.EmojiEvents
                     ) {
-                        viewModel.availableSkills.forEach { (id, name) ->
-                            val isSelected = state.selectedSkillIds.contains(id)
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { viewModel.onSkillToggle(id) },
-                                label = { Text(name) }
-                            )
+                        Text(
+                            text = "Describe your sports background",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = OnSurfaceHint
+                        )
+
+                        OutlinedTextField(
+                            value = state.experience,
+                            onValueChange = { viewModel.onExperienceChange(it) },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = {
+                                Text(
+                                    "e.g. Played basketball for 5 years, love weekend football...",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = OnSurfaceDisabled
+                                )
+                            },
+                            minLines = 4,
+                            maxLines = 8,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedBorderColor = OutlineVariant,
+                                focusedBorderColor = SportGreen,
+                                unfocusedContainerColor = ElevatedDark,
+                                focusedContainerColor = ElevatedDark,
+                                cursorColor = SportGreen,
+                                unfocusedTextColor = OnSurface,
+                                focusedTextColor = OnSurface,
+                                unfocusedPlaceholderColor = OnSurfaceDisabled,
+                                focusedPlaceholderColor = OnSurfaceDisabled
+                            ),
+                            textStyle = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+
+                    // ── Skills section ────────────────────────────────
+                    EditSectionCard(
+                        title = "Skills",
+                        icon = Icons.Default.SportsSoccer
+                    ) {
+                        Text(
+                            text = "Select the sports you play",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = OnSurfaceHint
+                        )
+
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            viewModel.availableSkills.forEach { (id, name) ->
+                                SelectableSkillChip(
+                                    skill = name,
+                                    isSelected = state.selectedSkillIds.contains(id),
+                                    onClick = { viewModel.onSkillToggle(id) }
+                                )
+                            }
+                        }
+
+                        // Selected count
+                        AnimatedVisibility(visible = state.selectedSkillIds.isNotEmpty()) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(TertiaryContainer)
+                                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = "${state.selectedSkillIds.size} selected",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = TertiaryIndigo,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(Modifier.height(4.dp))
 
-                    // --- SAVE BUTTON ---
-                    Button(
-                        onClick = { viewModel.saveProfile() },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !state.isSaving
-                    ) {
-                        if (state.isSaving) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                        }
-                        Text(if (state.isSaving) "Saving..." else "Save Changes")
-                    }
+                    // ── Save button ───────────────────────────────────
+                    SaveButton(
+                        isSaving = state.isSaving,
+                        onClick = { viewModel.saveProfile() }
+                    )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(Modifier.height(8.dp))
                 }
             }
         }

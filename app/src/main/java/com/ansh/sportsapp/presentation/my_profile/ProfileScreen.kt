@@ -1,34 +1,28 @@
 package com.ansh.sportsapp.presentation.my_profile
 
+import androidx.compose.animation.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.shape.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarBorder
-import androidx.compose.material.icons.filled.StarHalf
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.pulltorefresh.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ansh.sportsapp.domain.model.Review
 import com.ansh.sportsapp.domain.model.UserProfile
 import com.ansh.sportsapp.presentation.navigation.Screen
+import com.ansh.sportsapp.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
@@ -42,324 +36,50 @@ fun ProfileScreen(
     val pullToRefreshState = rememberPullToRefreshState()
     var isRefreshing by remember { mutableStateOf(false) }
 
-    // Handle logout navigation
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collectLatest { event ->
             when (event) {
-                is ProfileUiEvent.LoggedOut -> {
-                    // MainScreen's token watcher will handle navigation to Login
-                }
+                is ProfileUiEvent.LoggedOut -> { /* token watcher handles nav */ }
             }
         }
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = BackgroundDark,
         topBar = {
-            TopAppBar(
-                title = { Text("My Profile", color = MaterialTheme.colorScheme.onSurface) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
-                actions = {
-
-                    IconButton(onClick = { navController.navigate(Screen.EditProfile.route) }) {
-                        Icon(Icons.Default.Person, contentDescription = "Edit Profile", tint = MaterialTheme.colorScheme.primary)
-                    }
-
-                    IconButton(onClick = { viewModel.logOut() }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "Logout",
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
+            ProfileTopBar(
+                username = state.profile?.username,
+                onEditClick = { navController.navigate(Screen.EditProfile.route) },
+                onLogoutClick = { viewModel.logOut() }
             )
         }
     ) { padding ->
         PullToRefreshBox(
             isRefreshing = isRefreshing,
-            onRefresh = {
-                isRefreshing = true
-                viewModel.refresh()
-            },
+            onRefresh = { isRefreshing = true; viewModel.refresh() },
             state = pullToRefreshState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+            modifier = Modifier.fillMaxSize().padding(padding)
         ) {
-            // Stop refreshing when loading finishes
             LaunchedEffect(state.isLoading) {
                 if (!state.isLoading && isRefreshing) {
-                    delay(300)
-                    isRefreshing = false
+                    delay(300); isRefreshing = false
                 }
             }
 
             when {
-                state.isLoading && state.profile == null -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+                state.isLoading && state.profile == null -> ProfileLoadingState()
 
-                state.error != null && state.profile == null -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = state.error ?: "Something went wrong",
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Button(
-                                onClick = { viewModel.refresh() },
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                            ) {
-                                Text("Retry")
-                            }
-                        }
-                    }
-                }
-
-                state.profile != null -> {
-                    ProfileContent(
-                        profile = state.profile!!,
-                        reviews = state.reviews,
-                        isReviewLoading = state.isReviewLoading
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ProfileContent(profile: UserProfile, reviews: List<Review>, isReviewLoading: Boolean = false) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(vertical = 16.dp)
-    ) {
-        // --- HEADER CARD ---
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                ),
-                elevation = CardDefaults.cardElevation(4.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(26.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(74.dp),
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = profile.username,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    RatingBar(rating = profile.overallRating, highlightColor = MaterialTheme.colorScheme.tertiary)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "%.1f / 5.0".format(profile.overallRating),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
-                    )
-                }
-            }
-        }
-
-        // --- EXPERIENCE ---
-        if (profile.experience.isNotBlank()) {
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(2.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Experience",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = profile.experience,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
-
-        // --- SKILLS ---
-        if (profile.skills.isNotEmpty()) {
-            item {
-                Card(modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Skills",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            profile.skills.forEach { skill ->
-                                AssistChip(
-                                    onClick = {},
-                                    colors = AssistChipDefaults.assistChipColors(
-                                        containerColor = MaterialTheme.colorScheme.secondary.copy(.15f),
-                                        labelColor = MaterialTheme.colorScheme.secondary
-                                    ),
-                                    label = { Text(skill) }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // --- REVIEWS HEADER ---
-        item(key = "reviews_header") {
-            Text(
-                text = "Reviews (${reviews.size})",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-
-        when {
-            isReviewLoading -> {
-                item(key = "reviews_loading") {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
-
-            reviews.isEmpty() -> {
-                item(key = "reviews_empty") {
-                    Card(modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "No reviews yet",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface.copy(0.6f)
-                            )
-                        }
-                    }
-                }
-            }
-
-            else -> {
-                items(
-                    items = reviews,
-                    key = { "review_${it.id}" }
-                ) { review ->
-                    ReviewCard(review = review)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ReviewCard(review: Review) {
-    Card(modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(1.dp)) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = review.reviewerUsername,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Medium
+                state.error != null && state.profile == null -> ProfileErrorState(
+                    message = state.error ?: "Something went wrong",
+                    onRetry = { viewModel.refresh() }
                 )
-                RatingBar(rating = review.rating.toDouble(), starSize = 16)
-            }
-            if (review.comment.isNotBlank()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = review.comment,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(.7f)
+
+                state.profile != null -> ProfileContent(
+                    profile = state.profile!!,
+                    reviews = state.reviews,
+                    isReviewLoading = state.isReviewLoading
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun RatingBar(rating: Double, starSize: Int = 24,highlightColor : Color = MaterialTheme.colorScheme.tertiary) {
-    Row {
-        for (i in 1..5) {
-            Icon(
-                imageVector = when {
-                    rating >= i -> Icons.Default.Star
-                    rating >= i - 0.5 -> Icons.Default.StarHalf
-                    else -> Icons.Default.StarBorder
-                },
-                contentDescription = null,
-                modifier = Modifier.size(starSize.dp),
-                tint = highlightColor
-            )
         }
     }
 }

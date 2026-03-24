@@ -10,7 +10,7 @@ data class GigDto(
     val dateTime: String, // ISO String (e.g. "2026-05-10T18:00:00")
     val playersNeeded: Int,
     val status: String,
-    val gigMasterUsername: String,
+    val gigMasterUsername: String?,
     @SerializedName("acceptedParticipants")
     val acceptedParticipant: List<ParticipantDto>,
     @SerializedName("isOwner")

@@ -157,10 +157,30 @@ class GigDetailViewModel @Inject constructor(
     fun completeGig(){
         val gigId = state.value.gig?.id ?: return
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
             try {
-                val updatedGig =  completeGigUseCase(gigId = gigId)
-                _state.update { it.copy(isLoading = false, gig = updatedGig) }
-                _uiEvent.emit(GigDetailUiEvent.ShowSnackBar("Gig marked as completed"))
+                when(val result = completeGigUseCase(gigId)){
+                    is Resource.Success ->{
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                gig = result.data
+                            )
+                        }
+                        _uiEvent.emit(
+                            GigDetailUiEvent.ShowSnackBar("Gig marked as completed")
+                        )
+                    }
+                    is Resource.Error ->{
+                        _state.update { it.copy(isLoading = false) }
+                        _uiEvent.emit(
+                            GigDetailUiEvent.ShowSnackBar(
+                                result.message ?: "Failed to complete gig"
+                            )
+                        )
+                    }
+                    is Resource.Loading -> Unit
+                }
             }catch (e: Exception){
                 _state.update { it.copy(isLoading = false) }
                 _uiEvent.emit(GigDetailUiEvent.ShowSnackBar(e.message ?: "Failed to complete gig"))
