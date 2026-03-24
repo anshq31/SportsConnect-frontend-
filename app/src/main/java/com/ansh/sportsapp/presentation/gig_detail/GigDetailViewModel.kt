@@ -9,6 +9,8 @@ import com.ansh.sportsapp.domain.usecase.gig.GetGigByIdUseCase
 import com.ansh.sportsapp.domain.usecase.gig.GetMyRequestUseCase
 import com.ansh.sportsapp.domain.usecase.gig.ManageRequestUseCase
 import com.ansh.sportsapp.domain.usecase.gig.RequestJoinUseCase
+import com.ansh.sportsapp.presentation.my_gigs.GigEvent
+import com.ansh.sportsapp.presentation.my_gigs.GigEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +28,7 @@ class GigDetailViewModel @Inject constructor(
     private val requestJoinUseCase: RequestJoinUseCase,
     private val getGigByIdUseCase: GetGigByIdUseCase,
     private val completeGigUseCase: CompleteGigUseCase,
+    private val gigEventBus: GigEventBus,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(){
     private val _state = MutableStateFlow(GigDetailState())
@@ -83,6 +86,7 @@ class GigDetailViewModel @Inject constructor(
             when (val result = requestJoinUseCase(gigId)) {
                 is Resource.Success -> {
                     _state.update { it.copy(isJoinLoading = false) }
+                    gigEventBus.emit(GigEvent.GigJoined)
                     _uiEvent.emit(GigDetailUiEvent.JoinSuccess)
                     loadGig(gigId)
                 }
@@ -167,6 +171,7 @@ class GigDetailViewModel @Inject constructor(
                                 gig = result.data
                             )
                         }
+                        gigEventBus.emit(GigEvent.GigCompleted)
                         _uiEvent.emit(
                             GigDetailUiEvent.ShowSnackBar("Gig marked as completed")
                         )

@@ -17,6 +17,10 @@ class AuthInterceptor @Inject constructor(
             return chain.proceed(request)
         }
 
+        if (request.header("Authorization") != null){
+            return chain.proceed(request)
+        }
+
         val token = runBlocking {
             authPreferences.accessToken.first()
         }
