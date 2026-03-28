@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ansh.sportsapp.common.Resource
 import com.ansh.sportsapp.domain.usecase.gig.CreateGigUseCase
-import com.ansh.sportsapp.presentation.my_gigs.GigEvent
-import com.ansh.sportsapp.presentation.my_gigs.GigEventBus
+//import com.ansh.sportsapp.presentation.my_gigs.GigEvent
+//import com.ansh.sportsapp.presentation.my_gigs.GigEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CreateGigViewModel @Inject constructor(
     private val useCase: CreateGigUseCase,
-    private val gigEventBus: GigEventBus
+//    private val gigEventBus: GigEventBus
 ) : ViewModel(){
 
     val availableSports: List<Pair<Long, String>> = listOf(
@@ -63,7 +63,7 @@ class CreateGigViewModel @Inject constructor(
             when (result) {
                 is Resource.Success -> {
                     _state.update { it.copy(isLoading = false) }
-                    gigEventBus.emit(GigEvent.GigCreated)
+//                    gigEventBus.emit(GigEvent.GigCreated)
                     _uiEvent.emit(CreateGigUiEvent.GigCreated)
                 }
                 is Resource.Error -> {

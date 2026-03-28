@@ -41,6 +41,10 @@ fun MyGigsScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
+
     Scaffold(
         containerColor = BackgroundDark,
         snackbarHost = { SnackbarHost(snackbarHostState) },

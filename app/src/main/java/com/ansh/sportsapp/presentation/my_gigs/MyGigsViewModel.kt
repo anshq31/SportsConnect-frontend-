@@ -22,7 +22,7 @@ import javax.inject.Inject
 class MyGigsViewModel @Inject constructor(
     private val joinedGigUseCase: GetJoinedGigUseCase,
     private val createdGigUseCase: CreatedGigUseCase,
-    private val gigEventBus: GigEventBus
+//    private val gigEventBus: GigEventBus
 ) : ViewModel(){
     private val _state = MutableStateFlow(MyGigsState())
     val state : StateFlow<MyGigsState> = _state.asStateFlow()
@@ -34,21 +34,21 @@ class MyGigsViewModel @Inject constructor(
         loadCreatedGigs()
         loadJoinedGigs()
 
-        gigEventBus.events.
-                onEach { event ->
-                    when(event){
-                        is GigEvent.GigCreated -> {
-                            loadCreatedGigs()
-                        }
-                        is GigEvent.GigJoined -> {
-                            loadJoinedGigs()
-                        }
-                        is GigEvent.GigCompleted -> {
-                            loadCreatedGigs()
-                            loadJoinedGigs()
-                        }
-                    }
-                }.launchIn(viewModelScope)
+//        gigEventBus.events.
+//                onEach { event ->
+//                    when(event){
+//                        is GigEvent.GigCreated -> {
+//                            loadCreatedGigs()
+//                        }
+//                        is GigEvent.GigJoined -> {
+//                            loadJoinedGigs()
+//                        }
+//                        is GigEvent.GigCompleted -> {
+//                            loadCreatedGigs()
+//                            loadJoinedGigs()
+//                        }
+//                    }
+//                }.launchIn(viewModelScope)
     }
 
     fun loadJoinedGigs(){
@@ -79,7 +79,7 @@ class MyGigsViewModel @Inject constructor(
 
     fun loadCreatedGigs(){
         viewModelScope.launch {
-            _state.update { it.copy(isCreatedGigsLoading = true, joinedGigError = null) }
+            _state.update { it.copy(isCreatedGigsLoading = true, createdGigError = null) }
 
             when(val result = createdGigUseCase()){
                 is Resource.Success->{
@@ -94,7 +94,7 @@ class MyGigsViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isCreatedGigsLoading = false,
-                            joinedGigError = result.message ?: "Failed to load gigs"
+                            createdGigError = result.message ?: "Failed to load gigs"
                         )
                     }
                 }
@@ -104,7 +104,9 @@ class MyGigsViewModel @Inject constructor(
     }
 
     fun refresh(){
-        loadJoinedGigs()
         loadCreatedGigs()
+        loadJoinedGigs()
     }
+
+
 }
