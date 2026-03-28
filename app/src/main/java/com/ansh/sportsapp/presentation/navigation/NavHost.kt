@@ -19,10 +19,10 @@ import com.ansh.sportsapp.presentation.my_profile.ProfileScreen
 import com.ansh.sportsapp.presentation.user_profile.UserProfileScreen
 
 @Composable
-fun AppNavigation(navController : NavHostController,startDestination : String){
+fun AppNavigation(navController : NavHostController){
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = Screen.Login.route
     ){
         composable(Screen.Login.route) {
             LoginScreen(navController=navController)

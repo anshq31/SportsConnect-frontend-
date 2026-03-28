@@ -1,29 +1,27 @@
 package com.ansh.sportsapp.presentation.chat
 
-
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.ansh.sportsapp.ui.theme.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
     navController: NavController,
@@ -31,76 +29,126 @@ fun ChatScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
-    // Auto-scroll to bottom when new messages arrive
+    // Auto-scroll to bottom when messages arrive
     LaunchedEffect(state.messages.size) {
         if (state.messages.isNotEmpty()) {
+            delay(80)
             listState.animateScrollToItem(state.messages.size - 1)
         }
     }
 
+    // Show scroll-to-bottom button when user scrolled up
+    val showScrollButton by remember {
+        derivedStateOf {
+            val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val totalItems = listState.layoutInfo.totalItemsCount
+            totalItems > 0 && lastVisible < totalItems - 3
+        }
+    }
+
     Scaffold(
+        containerColor = BackgroundDark,
         topBar = {
-            TopAppBar(
-                title = { Text("Team Chat") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
+            ChatTopBar(onBack = { navController.popBackStack() })
+        },
+        bottomBar = {
+            ChatInputBar(
+                value = state.messageText,
+                onValueChange = viewModel::onMessageChange,
+                onSend = { viewModel.sendMessage() }
             )
         }
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Messages List
-            LazyColumn(
+            // Subtle background gradient
+            Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                state = listState,
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(vertical = 12.dp)
-            ) {
-                items(state.messages,
-                    key = { it.id }
-                ) { message ->
-                    MessageBubble(message)
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                BackgroundDark,
+                                SurfaceDark.copy(alpha = 0.4f),
+                                BackgroundDark
+                            )
+                        )
+                    )
+            )
+
+            if (state.messages.isEmpty()) {
+                ChatEmptyState()
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        start = 12.dp, end = 12.dp,
+                        top = 12.dp, bottom = 16.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    item(key = "date_today") {
+                        ChatDateSeparator(label = "Today")
+                    }
+
+                    items(
+                        items = state.messages,
+                        key = { it.id }
+                    ) { message ->
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = if (message.isFromMe) {
+                                fadeIn(tween(180)) +
+                                        slideInHorizontally(tween(180)) { it / 4 }
+                            } else {
+                                fadeIn(tween(180)) +
+                                        slideInHorizontally(tween(180)) { -it / 4 }
+                            }
+                        ) {
+                            MessageBubble(message = message)
+                        }
+                    }
                 }
             }
 
-            Divider()
-
-            // Input Area
-            Row(
+            // Scroll-to-bottom FAB
+            AnimatedVisibility(
+                visible = showScrollButton,
+                enter = fadeIn(tween(200)) + scaleIn(tween(200)),
+                exit = fadeOut(tween(200)) + scaleOut(tween(200)),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding()
-                    .navigationBarsPadding()
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 12.dp)
             ) {
-                OutlinedTextField(
-                    value = state.messageText,
-                    onValueChange = viewModel::onMessageChange,
-                    modifier = Modifier.weight(1f),
-                    placeholder = { Text("Type a message...") },
-                    maxLines = 3,
-                    shape = MaterialTheme.shapes.large,
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                IconButton(
-                    onClick = viewModel::sendMessage,
-                    enabled = state.messageText.isNotBlank()
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(SportGreenContainer)
+                        .border(1.dp, SportGreen.copy(alpha = 0.4f), CircleShape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            coroutineScope.launch {
+                                if (state.messages.isNotEmpty()) {
+                                    listState.animateScrollToItem(state.messages.size - 1)
+                                }
+                            }
+                        },
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Send",
-                        tint = MaterialTheme.colorScheme.primary
+                        Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Scroll to bottom",
+                        tint = SportGreen,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }

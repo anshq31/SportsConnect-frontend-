@@ -74,7 +74,7 @@ fun SportsBottomBar(navController: NavController) {
                         .border(1.dp, borderColor, RoundedCornerShape(12.dp))
                         .clickable {
                             navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
+                                popUpTo(Screen.Home.route) {
                                     saveState = true
                                 }
                                 launchSingleTop = true

@@ -1,5 +1,6 @@
 package com.ansh.sportsapp.presentation.main
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -8,8 +9,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.*
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
 import com.ansh.sportsapp.data.local.AuthPreferences
 import com.ansh.sportsapp.presentation.navigation.AppNavigation
@@ -17,12 +16,11 @@ import com.ansh.sportsapp.presentation.navigation.Screen
 import com.ansh.sportsapp.ui.theme.*
 
 @Composable
-fun MainScreen(authPreferences: AuthPreferences) {
+fun MainScreen(authPreferences: AuthPreferences,isLoggedIn : Boolean? = null) {
+    val navController = rememberNavController()
     val accessToken by authPreferences.accessToken.collectAsState(initial = null)
     val isLoggedIn = accessToken != null
 
-    val startDestination = if (isLoggedIn) Screen.Home.route else Screen.Login.route
-    val navController = rememberNavController()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -34,11 +32,21 @@ fun MainScreen(authPreferences: AuthPreferences) {
     )
 
     LaunchedEffect(isLoggedIn) {
-        if (!isLoggedIn) {
+        if (isLoggedIn) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Login.route) { inclusive = true }
+            }
+        } else {
             navController.navigate(Screen.Login.route) {
-                popUpTo(0) { inclusive = true }
+                popUpTo(0)
             }
         }
+    }
+
+    val nonHomeTab = currentRoute == Screen.Gigs.route || currentRoute == Screen.Profile.route
+
+    BackHandler(enabled = isLoggedIn && nonHomeTab) {
+        navController.popBackStack(Screen.Home.route,false)
     }
 
     Scaffold(
@@ -66,7 +74,7 @@ fun MainScreen(authPreferences: AuthPreferences) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            AppNavigation(navController = navController, startDestination = startDestination)
+            AppNavigation(navController = navController)
         }
     }
 }
