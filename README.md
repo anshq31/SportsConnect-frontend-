@@ -12,8 +12,13 @@ SportsConnect is your one-stop mobile solution to connect with sports enthusiast
 
 ## 🛠️ Tech Stack
 
-- **Kotlin** (100%): Modern, concise language for robust Android app development
-- Android Studio & Jetpack Libraries
+- **Kotlin (100%)**: Core app language
+- **Coroutines**: Asynchronous programming
+- **Retrofit & OkHttp**: For network API calls
+- **Hilt**: Dependency Injection framework
+- **Jetpack**: MVVM architecture (LiveData,Flows(cold & hot), ViewModel, Navigation, Room, etc.)
+- **Material Design**: UI/UX components
+- **Android Studio**: Development environment
 
 <!-- 3x3 Image Grid (Replace each src with your actual image file paths or URLs) -->
 ## 📸 Screenshots
