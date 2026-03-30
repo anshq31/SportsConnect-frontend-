@@ -15,26 +15,59 @@ SportsConnect is your one-stop mobile solution to connect with sports enthusiast
 - **Kotlin** (100%): Modern, concise language for robust Android app development
 - Android Studio & Jetpack Libraries
 
-## 📸 Screenshots
-
-## 📸 Screenshots
-
 <!-- 3x3 Image Grid (Replace each src with your actual image file paths or URLs) -->
+## 📸 Screenshots
+
 <table>
   <tr>
-    <td><img src="path/to/screenshot1.png" width="200"/></td>
-    <td><img src="path/to/screenshot2.png" width="200"/></td>
-    <td><img src="path/to/screenshot3.png" width="200"/></td>
+    <td align="center">
+      <img src="loginscreen.jpeg" width="200"/><br/>
+      <b>Login</b>
+    </td>
+    <td align="center">
+      <img src="registerscreen.jpeg" width="200"/><br/>
+      <b>Register</b>
+    </td>
+    <td align="center">
+      <img src="homescreen.jpeg" width="200"/><br/>
+      <b>Home</b>
+    </td>
   </tr>
   <tr>
-    <td><img src="path/to/screenshot4.png" width="200"/></td>
-    <td><img src="path/to/screenshot5.png" width="200"/></td>
-    <td><img src="path/to/screenshot6.png" width="200"/></td>
+    <td align="center">
+      <img src="creategig.jpeg" width="200"/><br/>
+      <b>Create Gig</b>
+    </td>
+    <td align="center">
+      <img src="createdscreen.jpeg" width="200"/><br/>
+      <b>Created Screen</b>
+    </td>
+    <td align="center">
+      <img src="chatscreen.jpeg" width="200"/><br/>
+      <b>Chat Screen</b>
+    </td>
   </tr>
   <tr>
-    <td><img src="path/to/screenshot7.png" width="200"/></td>
-    <td><img src="path/to/screenshot8.png" width="200"/></td>
-    <td><img src="path/to/screenshot9.png" width="200"/></td>
+    <td align="center">
+      <img src="editprofile.jpeg" width="200"/><br/>
+      <b>Edit Profile</b>
+    </td>
+    <td align="center">
+      <img src="joinedgigs.jpeg" width="200"/><br/>
+      <b>Joined Gigs</b>
+    </td>
+    <td align="center">
+      <img src="mygigdetails.jpeg" width="200"/><br/>
+      <b>MyGig Details</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="userprofile.jpeg" width="200"/><br/>
+      <b>User Profile</b>
+    </td>
+    <td></td>
+    <td></td>
   </tr>
 </table>
 
