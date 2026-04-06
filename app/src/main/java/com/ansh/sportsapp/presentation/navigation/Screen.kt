@@ -25,6 +25,7 @@ sealed class Screen(val route : String , val title : String , val icon : ImageVe
     // Gig Actions
     object CreateGig : Screen("create_gig", "Create Gig", Icons.Default.Add)
 
+
     object GigDetail : Screen("gig_detail/{gigId}", "Gig Detail", Icons.Default.Sports) {
         fun createRoute(gigId: Long) = "gig_detail/$gigId"
     }

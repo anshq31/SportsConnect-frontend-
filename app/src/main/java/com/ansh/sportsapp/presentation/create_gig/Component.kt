@@ -6,15 +6,18 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.*
 import com.ansh.sportsapp.ui.theme.*
 
@@ -181,8 +184,7 @@ fun GigFormField(
     placeholder: String,
     icon: ImageVector,
     modifier: Modifier = Modifier,
-    keyboardType: androidx.compose.ui.text.input.KeyboardType =
-        androidx.compose.ui.text.input.KeyboardType.Text
+    keyboardType: KeyboardType = KeyboardType.Text
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
@@ -205,7 +207,7 @@ fun GigFormField(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+            keyboardOptions = KeyboardOptions(
                 keyboardType = keyboardType
             ),
             colors = OutlinedTextFieldDefaults.colors(
