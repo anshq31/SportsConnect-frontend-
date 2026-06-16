@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,7 +27,8 @@ import com.ansh.sportsapp.ui.theme.*
 fun ProfileTopBar(
     username: String?,
     onEditClick: () -> Unit,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
     Column {
         Box(
@@ -72,6 +74,25 @@ fun ProfileTopBar(
                         Icon(
                             Icons.Default.Edit,
                             contentDescription = "Edit",
+                            tint = OnSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+                // Delete account button
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(ElevatedDark)
+                        .border(1.dp, OutlineVariant, RoundedCornerShape(10.dp))
+                ) {
+                    IconButton(
+                        onClick = onDeleteClick,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.DeleteOutline,
+                            contentDescription = "Delete Account",
                             tint = OnSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
@@ -430,7 +451,7 @@ fun RatingBar(
             Icon(
                 imageVector = when {
                     rating >= i -> Icons.Default.Star
-                    rating >= i - 0.5 -> Icons.Default.StarHalf
+                    rating >= i - 0.5 -> Icons.AutoMirrored.Filled.StarHalf
                     else -> Icons.Default.StarBorder
                 },
                 contentDescription = null,

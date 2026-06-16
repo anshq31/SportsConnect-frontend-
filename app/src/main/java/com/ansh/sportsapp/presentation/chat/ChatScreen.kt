@@ -20,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ansh.sportsapp.ui.theme.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Composable
@@ -30,6 +31,14 @@ fun ChatScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Collect toast events
+    LaunchedEffect(Unit) {
+        viewModel.toastEvent.collectLatest { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 
     // Auto-scroll to bottom when messages arrive
     LaunchedEffect(state.messages.size) {
@@ -39,7 +48,6 @@ fun ChatScreen(
         }
     }
 
-    // Show scroll-to-bottom button when user scrolled up
     val showScrollButton by remember {
         derivedStateOf {
             val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
@@ -50,6 +58,7 @@ fun ChatScreen(
 
     Scaffold(
         containerColor = BackgroundDark,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             ChatTopBar(onBack = { navController.popBackStack() })
         },
@@ -66,7 +75,6 @@ fun ChatScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Subtle background gradient
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -104,20 +112,21 @@ fun ChatScreen(
                         AnimatedVisibility(
                             visible = true,
                             enter = if (message.isFromMe) {
-                                fadeIn(tween(180)) +
-                                        slideInHorizontally(tween(180)) { it / 4 }
+                                fadeIn(tween(180)) + slideInHorizontally(tween(180)) { it / 4 }
                             } else {
-                                fadeIn(tween(180)) +
-                                        slideInHorizontally(tween(180)) { -it / 4 }
+                                fadeIn(tween(180)) + slideInHorizontally(tween(180)) { -it / 4 }
                             }
                         ) {
-                            MessageBubble(message = message)
+                            MessageBubble(
+                                message = message,
+                                onReport = { viewModel.reportMessage(it) },
+                                onBlock = { userId -> viewModel.blockUser(userId) }
+                            )
                         }
                     }
                 }
             }
 
-            // Scroll-to-bottom FAB
             AnimatedVisibility(
                 visible = showScrollButton,
                 enter = fadeIn(tween(200)) + scaleIn(tween(200)),

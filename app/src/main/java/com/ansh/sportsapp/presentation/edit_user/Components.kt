@@ -246,7 +246,7 @@ fun SelectableSkillChip(
 // ─── Save button ──────────────────────────────────────────────────────────────
 
 @Composable
-fun SaveButton(isSaving: Boolean, onClick: () -> Unit) {
+fun SaveButton(isSaving: Boolean, onClick: () -> Unit,onButtonClick: () -> Unit) {
     val scale by animateFloatAsState(
         targetValue = if (isSaving) 0.97f else 1f,
         animationSpec = tween(150),

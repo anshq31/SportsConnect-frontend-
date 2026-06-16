@@ -8,6 +8,7 @@ data class ProfileState(
     val reviews : List<Review> = emptyList(),
     val isReviewLoading : Boolean = false,
     val isLoading : Boolean = false,
+    val isDeleting : Boolean = false,
     val error : String? = null,
     val reviewsError : String? = null
 )

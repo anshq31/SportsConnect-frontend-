@@ -7,7 +7,8 @@ import com.ansh.sportsapp.data.local.database.chat.ChatMessageEntity
 
 @Database(
     entities = [ChatMessageEntity::class],
-    version = 1
+    version = 2,
+    exportSchema = false
 )
 abstract class SportsDatabase : RoomDatabase(){
     abstract fun chatMessageDao(): ChatMessageDao

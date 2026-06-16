@@ -1,8 +1,8 @@
 package com.ansh.sportsapp.data.di
 
+import com.ansh.sportsapp.BuildConfig
 import com.ansh.sportsapp.data.local.TokenAuthenticator
 import com.ansh.sportsapp.data.remote.AuthInterceptor
-import com.ansh.sportsapp.data.remote.SportsApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,12 +17,11 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetWorkModule {
-    private const val BASE_URL = " https://sportsconnect-c2po.onrender.com/"
     @Provides
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor{
         return HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
         }
     }
 
@@ -43,7 +42,7 @@ object NetWorkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit{
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

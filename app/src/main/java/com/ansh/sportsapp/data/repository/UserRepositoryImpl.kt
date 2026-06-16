@@ -55,6 +55,30 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun blockUser(userId: Long): Resource<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = api.blockUser(userId)
+                if (response.isSuccessful || response.code() == 409) Resource.Success(Unit)
+                else Resource.Error("Failed to block user: ${response.code()}")
+            } catch (e: Exception) {
+                Resource.Error(e.localizedMessage ?: "An error occurred")
+            }
+        }
+    }
+
+    override suspend fun unblockUser(userId: Long): Resource<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = api.unblockUser(userId)
+                if (response.isSuccessful) Resource.Success(Unit)
+                else Resource.Error("Failed to unblock user: ${response.code()}")
+            } catch (e: Exception) {
+                Resource.Error(e.localizedMessage ?: "An error occurred")
+            }
+        }
+    }
+
     private fun UserProfileDto.toDomain(): UserProfile{
         return UserProfile(
             id = id,
@@ -62,6 +86,7 @@ class UserRepositoryImpl @Inject constructor(
             experience = experience?:"",
             overallRating = overallRating ?: 0.0,
             skills = skill?.toList()?: emptyList(),
+            blockedUserIds = blockedUserIds ?: emptyList()
         )
     }
 

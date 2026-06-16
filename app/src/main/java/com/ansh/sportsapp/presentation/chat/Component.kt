@@ -16,6 +16,7 @@ import com.ansh.sportsapp.domain.model.ChatMessage
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.foundation.text.*
@@ -28,6 +29,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -131,16 +133,45 @@ fun ChatOnlineIndicator() {
 // ─── Message Bubble ───────────────────────────────────────────────────────────
 
 @Composable
-fun MessageBubble(message: ChatMessage) {
+fun MessageBubble(
+    message: ChatMessage,
+    onReport: (messageId: String) -> Unit = {},
+    onBlock: (userId: Long) -> Unit = {}
+) {
     val isMe = message.isFromMe
+    var showMenu by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp),
+            .padding(horizontal = 4.dp)
+            .then(
+                if (!isMe) Modifier.pointerInput(message.id) {
+                    detectTapGestures(onLongPress = { showMenu = true })
+                } else Modifier
+            ),
         horizontalArrangement = if (isMe) Arrangement.End else Arrangement.Start,
         verticalAlignment = Alignment.Bottom
     ) {
+        if (!isMe && showMenu) {
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false },
+                containerColor = SurfaceDark
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Report Message", color = WarningAmber, style = MaterialTheme.typography.bodySmall) },
+                    leadingIcon = { Icon(Icons.Default.Flag, contentDescription = null, tint = WarningAmber, modifier = Modifier.size(16.dp)) },
+                    onClick = { showMenu = false; onReport(message.id) }
+                )
+                DropdownMenuItem(
+                    text = { Text("Block @${message.senderUsername}", color = ErrorRed, style = MaterialTheme.typography.bodySmall) },
+                    leadingIcon = { Icon(Icons.Default.Block, contentDescription = null, tint = ErrorRed, modifier = Modifier.size(16.dp)) },
+                    onClick = { showMenu = false; onBlock(message.senderId) }
+                )
+            }
+        }
+
         // Avatar for others
         if (!isMe) {
             Box(

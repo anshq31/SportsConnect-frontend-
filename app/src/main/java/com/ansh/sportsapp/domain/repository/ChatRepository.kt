@@ -9,4 +9,5 @@ interface ChatRepository {
         fun sendMessage(groupId: Long, content: String)
         fun observeMessages(groupId: Long): Flow<List<ChatMessage>>
         suspend fun loadHistory(groupId: Long)
+        suspend fun reportMessage(messageId: String): Result<Unit>
 }

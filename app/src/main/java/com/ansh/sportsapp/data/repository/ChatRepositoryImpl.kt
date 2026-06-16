@@ -1,10 +1,12 @@
 package com.ansh.sportsapp.data.repository
 
 import android.util.Log
+import com.ansh.sportsapp.BuildConfig
 import com.ansh.sportsapp.data.local.AuthPreferences
 import com.ansh.sportsapp.data.local.database.chat.ChatMessageDao
 import com.ansh.sportsapp.data.local.database.chat.ChatMessageEntity
 import com.ansh.sportsapp.data.remote.SportsApi
+import com.ansh.sportsapp.data.remote.dto.chat.ReportRequestDto
 import com.ansh.sportsapp.data.remote.websocket.StompWebSocketManager
 import com.ansh.sportsapp.domain.model.ChatMessage
 import com.ansh.sportsapp.domain.repository.ChatRepository
@@ -18,7 +20,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
-import okhttp3.Dispatcher
 import javax.inject.Inject
 
 class ChatRepositoryImpl @Inject constructor(
@@ -36,11 +37,12 @@ class ChatRepositoryImpl @Inject constructor(
         webSocketManager.messageFlow
             .onEach { message ->
                 val groupId = currentGroupId
-                if (groupId!= (-1).toLong()){
+                if (groupId != (-1).toLong()) {
                     dao.insert(
                         ChatMessageEntity(
                             id = message.id,
                             groupId = groupId,
+                            senderId = message.senderId,
                             senderUsername = message.senderUsername,
                             content = message.content,
                             timeStamp = message.timeStamp
@@ -65,11 +67,12 @@ class ChatRepositoryImpl @Inject constructor(
     }
 
     override fun observeMessages(groupId: Long): Flow<List<ChatMessage>> =
-        dao.observeMessages(groupId).map { entities->
-            val currentUsername = authPreferences.username.firstOrNull()?:""
+        dao.observeMessages(groupId).map { entities ->
+            val currentUsername = authPreferences.username.firstOrNull() ?: ""
             entities.map {
                 ChatMessage(
                     id = it.id,
+                    senderId = it.senderId,
                     senderUsername = it.senderUsername,
                     content = it.content,
                     timeStamp = it.timeStamp,
@@ -91,15 +94,29 @@ class ChatRepositoryImpl @Inject constructor(
                         ChatMessageEntity(
                             id = it.id,
                             groupId = groupId,
+                            senderId = it.senderId,
                             senderUsername = it.senderUsername,
                             content = it.content,
                             timeStamp = it.timeStamp
                         )
                     }
                 )
-            }catch (e: Exception){
-                Log.e("ChatRepo", "Failed to load history: ${e.message}")
+            } catch (e: Exception) {
+                if (BuildConfig.DEBUG) Log.e("ChatRepo", "Failed to load history: ${e.message}")
             }
+        }
+    }
+
+    override suspend fun reportMessage(messageId: String): Result<Unit> {
+        return try {
+            val response = api.reportMessage(messageId, ReportRequestDto())
+            when {
+                response.isSuccessful -> Result.success(Unit)
+                response.code() == 409 -> Result.failure(Exception("already_reported"))
+                else -> Result.failure(Exception("Failed: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 

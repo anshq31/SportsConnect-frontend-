@@ -1,9 +1,6 @@
 package com.ansh.sportsapp.data.repository
 
 
-import android.os.Build
-import android.util.Log
-import androidx.annotation.RequiresExtension
 import com.ansh.sportsapp.common.Resource
 import com.ansh.sportsapp.data.local.AuthPreferences
 import com.ansh.sportsapp.data.remote.SportsApi
@@ -46,33 +43,40 @@ class AuthRepositoryImpl @Inject constructor(
         username: String,
         password: String
     ): Resource<AuthResponseDto> {
-        Log.d("AUTH_REPO", "login() entered")
-        println("DEBUG_AUTH: Login started for user: $username")
-
         return try {
             val request = LoginRequestDto(username = username, password = password)
-            println("DEBUG_AUTH: Sending request to API...")
             val result = api.login(request)
-            println("DEBUG_AUTH: Response received: ${result.accessToken.take(10)}...")
             authPreferences.saveAuthData(
                 accessToken = result.accessToken,
                 refreshToken = result.refreshToken,
                 userId = result.id.toString(),
                 username = result.username
             )
-
             Resource.Success(result)
-        }catch (e : HttpException){
-            println("DEBUG_AUTH: HttpException code ${e.code()}")
+        } catch (e : HttpException){
             Resource.Error(e.message() ?: "Login Failed")
-        }catch (e : IOException){
-            println("DEBUG_AUTH: IOException - ${e.message}")
+        } catch (e : IOException){
             Resource.Error("Couldn't reach server. Check your internet connection.")
-        }catch (e: Exception) {
-            // JSON Parsing error or other crash
-            println("DEBUG_AUTH: CRASH! ${e.message}")
-            e.printStackTrace()
+        } catch (e: Exception) {
             Resource.Error("App Error: ${e.localizedMessage}")
+        }
+    }
+
+    override suspend fun deleteAccount(): Resource<Unit> {
+        return try {
+            val response = api.deleteAccount()
+            if (response.isSuccessful) {
+                authPreferences.clearAuthData()
+                Resource.Success(Unit)
+            } else {
+                Resource.Error("Failed to delete account: ${response.code()}")
+            }
+        } catch (e: HttpException) {
+            Resource.Error(e.localizedMessage ?: "An unexpected error occurred")
+        } catch (e: IOException) {
+            Resource.Error("Couldn't reach server. Check your internet connection.")
+        } catch (e: Exception) {
+            Resource.Error("Unknown error: ${e.localizedMessage}")
         }
     }
 }

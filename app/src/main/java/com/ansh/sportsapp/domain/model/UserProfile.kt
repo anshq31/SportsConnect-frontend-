@@ -5,5 +5,6 @@ data class UserProfile(
     val username: String,
     val experience: String,
     val overallRating: Double,
-    val skills: List<String>
+    val skills: List<String>,
+    val blockedUserIds: List<Long> = emptyList()
 )

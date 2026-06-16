@@ -60,7 +60,7 @@
                 context,
                 SportsDatabase::class.java,
                 "sports_connect"
-            ).build()
+            ).fallbackToDestructiveMigration(true).build()
         }
 
         @Provides

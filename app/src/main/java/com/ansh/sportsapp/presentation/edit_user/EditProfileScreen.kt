@@ -210,7 +210,8 @@ fun EditProfileScreen(
                     // ── Save button ───────────────────────────────────
                     SaveButton(
                         isSaving = state.isSaving,
-                        onClick = { viewModel.saveProfile() }
+                        onClick = { viewModel.saveProfile() },
+                        onButtonClick = {navController.popBackStack()}
                     )
 
                     Spacer(Modifier.height(8.dp))

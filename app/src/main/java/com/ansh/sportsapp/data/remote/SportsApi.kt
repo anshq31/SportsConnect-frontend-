@@ -14,9 +14,11 @@ import com.ansh.sportsapp.data.remote.dto.user.ReviewRequestDto
 import com.ansh.sportsapp.data.remote.dto.user.UserProfileDto
 import com.ansh.sportsapp.data.remote.dto.user.UserUpdateDto
 import com.ansh.sportsapp.domain.model.Gig
+import com.ansh.sportsapp.data.remote.dto.chat.ReportRequestDto
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -101,4 +103,19 @@ interface  SportsApi {
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 10
     ): PageResponseDto<ReviewDto>
+
+    @DELETE("api/users/me")
+    suspend fun deleteAccount(): Response<ResponseBody>
+
+    @POST("api/messages/{messageId}/report")
+    suspend fun reportMessage(
+        @Path("messageId") messageId: String,
+        @Body request: ReportRequestDto
+    ): Response<ResponseBody>
+
+    @POST("api/users/{userId}/block")
+    suspend fun blockUser(@Path("userId") userId: Long): Response<ResponseBody>
+
+    @DELETE("api/users/{userId}/block")
+    suspend fun unblockUser(@Path("userId") userId: Long): Response<ResponseBody>
 }

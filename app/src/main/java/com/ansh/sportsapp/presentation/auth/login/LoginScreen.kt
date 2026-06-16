@@ -1,17 +1,23 @@
 package com.ansh.sportsapp.presentation.auth.login
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.*
@@ -28,6 +34,7 @@ fun LoginScreen(
     navController: NavController
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     // Entrance animation
     var visible by remember { mutableStateOf(false) }
@@ -57,6 +64,7 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .windowInsetsPadding(WindowInsets.ime)
                 .padding(horizontal = 28.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -166,10 +174,40 @@ fun LoginScreen(
                                 }
                             )
                         }
+
+                    }
+
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ){
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "By continuing, you agree to our",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = OnSurfaceHint
+                            )
+                            Text(
+                                text = "Privacy Policy",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = SportGreen,
+                                modifier = Modifier.clickable {
+                                    val intent = Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse("https://www.privacypolicies.com/live/ca3c4faa-12c6-4cc5-a07e-cf9ebe2d056c")
+                                    )
+                                    context.startActivity(intent)
+                                }
+                            )
+                        }
                     }
                 }
             }
-
             Spacer(Modifier.height(40.dp))
         }
     }

@@ -6,6 +6,7 @@ import com.ansh.sportsapp.domain.model.UserProfile
 interface UserRepository {
     suspend fun getMyProfile(): Resource<UserProfile>
     suspend fun updateMyProfile(experience : String, skillIds : Set<Long>): Resource<UserProfile>
-
     suspend fun getUserProfile(userId: Long): Resource<UserProfile>
+    suspend fun blockUser(userId: Long): Resource<Unit>
+    suspend fun unblockUser(userId: Long): Resource<Unit>
 }

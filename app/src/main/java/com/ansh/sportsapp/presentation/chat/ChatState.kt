@@ -2,7 +2,8 @@ package com.ansh.sportsapp.presentation.chat
 
 import com.ansh.sportsapp.domain.model.ChatMessage
 
-data class ChatState (
+data class ChatState(
     val messages: List<ChatMessage> = emptyList(),
-    val messageText: String = ""
+    val messageText: String = "",
+    val blockedUserIds: Set<Long> = emptySet()
 )
