@@ -10,21 +10,23 @@ class CreateGigUseCase @Inject constructor(
     suspend operator fun invoke(
         sport: String,
         location: String,
-        date: String, // yyyy-MM-dd
-        time: String, // HH:mm
-        playersNeeded: String): Resource<Boolean>
-    {
-        if (sport.isBlank()||location.isBlank()||date.isBlank()||time.isBlank()||playersNeeded.isBlank()){
+        latitude: Double?,
+        longitude: Double?,
+        date: String,
+        time: String,
+        playersNeeded: String
+    ): Resource<Boolean> {
+        if (sport.isBlank() || location.isBlank() || date.isBlank() || time.isBlank() || playersNeeded.isBlank()) {
             return Resource.Error("All fields are required")
         }
 
         val players = playersNeeded.toIntOrNull()
-        if (players == null||players<=0) {
+        if (players == null || players <= 0) {
             return Resource.Error("Players needed must be a valid number")
         }
 
         val isoDateTime = "${date}T${time}:00"
 
-        return repository.createGig(sport,location,isoDateTime,players)
+        return repository.createGig(sport, location, latitude, longitude, isoDateTime, players)
     }
 }

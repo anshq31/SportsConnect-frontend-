@@ -1,6 +1,5 @@
 package com.ansh.sportsapp.presentation.create_gig
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
@@ -58,7 +57,7 @@ fun CreateGigScreen(
         ) {
 
             // ── Step 1: Sport ─────────────────────────────────────────
-            SectionCard {
+            GigSectionCard {
                 SportChipSelector(
                     sports = viewModel.availableSports,
                     selected = state.sport,
@@ -67,38 +66,70 @@ fun CreateGigScreen(
             }
 
             // ── Step 2: Location ──────────────────────────────────────
-            SectionCard {
+            GigSectionCard {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     StepSectionHeader(2, "Location", Icons.Default.LocationOn)
-                    GigFormField(
-                        value = state.location,
-                        onValueChange = { viewModel.onEvent(CreateGigEvent.EnteredLocation(it)) },
-                        label = "VENUE",
-                        placeholder = "e.g. Central Park, Court 3",
-                        icon = Icons.Default.LocationOn
+
+                    LocationSearchField(
+                        query = state.locationQuery,
+                        isSearching = state.isSearchingLocation,
+                        onQueryChange = { viewModel.onEvent(CreateGigEvent.LocationQueryChanged(it)) }
                     )
+
+                    LocationSuggestionList(
+                        suggestions = state.locationSuggestions,
+                        onSelect = { viewModel.onEvent(CreateGigEvent.SuggestionSelected(it)) }
+                    )
+
+                    // Capture as local vals to fix smart cast on delegated property
+                    val selectedLat = state.selectedLat
+                    val selectedLng = state.selectedLng
+
+                    if (selectedLat != null && selectedLng != null) {
+                        LocationMapPicker(
+                            lat = selectedLat,
+                            lng = selectedLng,
+                            onPinMoved = { lat, lng ->
+                                viewModel.onEvent(CreateGigEvent.MarkerDragged(lat, lng))
+                            }
+                        )
+
+                        if (state.locationDisplay.isNotBlank()) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Place,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(12.dp),
+                                    tint = OnSurfaceHint
+                                )
+                                Text(
+                                    text = state.locationDisplay,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = OnSurfaceHint,
+                                    maxLines = 2
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
             // ── Step 3: Date & Time ───────────────────────────────────
-            SectionCard {
+            GigSectionCard {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     StepSectionHeader(3, "Schedule", Icons.Default.Event)
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        GigFormField(
+                        GigDatePickerField(
                             value = state.date,
-                            onValueChange = { viewModel.onEvent(CreateGigEvent.EnteredDate(it)) },
-                            label = "DATE",
-                            placeholder = "2026-12-31",
-                            icon = Icons.Default.DateRange,
+                            onDateSelected = { viewModel.onEvent(CreateGigEvent.EnteredDate(it)) },
                             modifier = Modifier.weight(1f)
                         )
-                        GigFormField(
+                        GigTimePickerField(
                             value = state.time,
-                            onValueChange = { viewModel.onEvent(CreateGigEvent.EnteredTime(it)) },
-                            label = "TIME",
-                            placeholder = "18:30",
-                            icon = Icons.Default.Schedule,
+                            onTimeSelected = { viewModel.onEvent(CreateGigEvent.EnteredTime(it)) },
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -106,11 +137,10 @@ fun CreateGigScreen(
             }
 
             // ── Step 4: Players ───────────────────────────────────────
-            SectionCard {
+            GigSectionCard {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     StepSectionHeader(4, "Squad Size", Icons.Default.Group)
 
-                    // Quick select buttons
                     val quickValues = listOf(2, 4, 6, 8, 10, 12)
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         quickValues.forEach { n ->
@@ -119,17 +149,13 @@ fun CreateGigScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(
-                                        if (isSelected) SportGreenContainer else ElevatedDark
-                                    )
+                                    .background(if (isSelected) SportGreenContainer else ElevatedDark)
                                     .border(
                                         1.dp,
                                         if (isSelected) SportGreen.copy(alpha = 0.5f) else OutlineVariant,
                                         RoundedCornerShape(8.dp)
                                     )
-                                    .clickable {
-                                        viewModel.onEvent(CreateGigEvent.EnteredPlayers(n.toString()))
-                                    }
+                                    .clickable { viewModel.onEvent(CreateGigEvent.EnteredPlayers(n.toString())) }
                                     .padding(vertical = 8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -163,7 +189,7 @@ fun CreateGigScreen(
                 onClick = { viewModel.onEvent(CreateGigEvent.Submit) },
                 isLoading = state.isLoading,
                 enabled = state.sport.isNotBlank() &&
-                        state.location.isNotBlank() &&
+                        state.selectedLat != null &&
                         state.date.isNotBlank() &&
                         state.time.isNotBlank() &&
                         state.players.isNotBlank()
@@ -171,21 +197,5 @@ fun CreateGigScreen(
 
             Spacer(Modifier.height(8.dp))
         }
-    }
-}
-
-// ─── Section card wrapper ─────────────────────────────────────────────────────
-
-@Composable
-private fun SectionCard(content: @Composable () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(SurfaceVariantDark)
-            .border(1.dp, OutlineVariant, RoundedCornerShape(16.dp))
-            .padding(16.dp)
-    ) {
-        content()
     }
 }

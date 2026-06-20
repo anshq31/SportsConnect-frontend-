@@ -16,6 +16,7 @@ import com.ansh.sportsapp.presentation.gig_detail.GigDetailScreen
 import com.ansh.sportsapp.presentation.home.HomeScreen
 import com.ansh.sportsapp.presentation.my_gigs.MyGigsScreen
 import com.ansh.sportsapp.presentation.my_profile.ProfileScreen
+import com.ansh.sportsapp.presentation.blocked_users.BlockedUsersScreen
 import com.ansh.sportsapp.presentation.user_profile.UserProfileScreen
 
 @Composable
@@ -71,6 +72,10 @@ fun AppNavigation(navController : NavHostController){
             arguments = listOf(navArgument("userId") { type = NavType.LongType })
         ) {
             UserProfileScreen(navController = navController)
+        }
+
+        composable(Screen.BlockedUsers.route) {
+            BlockedUsersScreen(navController = navController)
         }
 
     }

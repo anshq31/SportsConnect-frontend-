@@ -1,6 +1,8 @@
 package com.ansh.sportsapp.data.repository
 
 import com.ansh.sportsapp.common.Resource
+import com.ansh.sportsapp.data.local.AuthPreferences
+import com.ansh.sportsapp.data.local.BlockedUserEntry
 import com.ansh.sportsapp.data.remote.SportsApi
 import com.ansh.sportsapp.data.remote.dto.user.ReviewDto
 import com.ansh.sportsapp.data.remote.dto.user.UserProfileDto
@@ -10,11 +12,15 @@ import com.ansh.sportsapp.domain.model.UserProfile
 import com.ansh.sportsapp.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 import javax.inject.Inject
 
+private const val ERR_BLOCKED = "403"
+
 class UserRepositoryImpl @Inject constructor(
-    private val api : SportsApi
-) : UserRepository{
+    private val api: SportsApi,
+    private val authPreferences: AuthPreferences
+) : UserRepository {
     override suspend fun getMyProfile(): Resource<UserProfile> {
         return withContext(Dispatchers.IO){
             try {
@@ -44,23 +50,35 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getUserProfile(userId: Long): Resource<UserProfile> {
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             try {
                 val dto = api.getUserProfile(userId)
                 Resource.Success(dto.toDomain())
-            }catch (e: Exception){
+            } catch (e: HttpException) {
+                if (e.code() == 403) Resource.Error(ERR_BLOCKED)
+                else Resource.Error("An error occurred while fetching user profile")
+            } catch (e: Exception) {
                 e.printStackTrace()
                 Resource.Error(e.localizedMessage ?: "An error occurred while fetching user profile")
             }
         }
     }
 
-    override suspend fun blockUser(userId: Long): Resource<Unit> {
+    override suspend fun blockUser(userId: Long, username: String): Resource<Unit> {
         return withContext(Dispatchers.IO) {
             try {
                 val response = api.blockUser(userId)
-                if (response.isSuccessful || response.code() == 409) Resource.Success(Unit)
-                else Resource.Error("Failed to block user: ${response.code()}")
+                when (response.code()) {
+                    200, 201, 204, 409 -> {
+                        authPreferences.addBlockedUserId(userId)
+                        authPreferences.saveBlockedUserEntry(BlockedUserEntry(userId, username))
+                        syncBlockedIds()
+                        Resource.Success(Unit)
+                    }
+                    400 -> Resource.Error("You can only block users you share a gig with")
+                    404 -> Resource.Error("User not found")
+                    else -> Resource.Error("Failed to block user: ${response.code()}")
+                }
             } catch (e: Exception) {
                 Resource.Error(e.localizedMessage ?: "An error occurred")
             }
@@ -71,12 +89,25 @@ class UserRepositoryImpl @Inject constructor(
         return withContext(Dispatchers.IO) {
             try {
                 val response = api.unblockUser(userId)
-                if (response.isSuccessful) Resource.Success(Unit)
-                else Resource.Error("Failed to unblock user: ${response.code()}")
+                if (response.isSuccessful) {
+                    authPreferences.removeBlockedUserId(userId)
+                    authPreferences.removeBlockedUserEntry(userId)
+                    syncBlockedIds()
+                    Resource.Success(Unit)
+                } else {
+                    Resource.Error("Failed to unblock user: ${response.code()}")
+                }
             } catch (e: Exception) {
                 Resource.Error(e.localizedMessage ?: "An error occurred")
             }
         }
+    }
+
+    private suspend fun syncBlockedIds() {
+        try {
+            val profile = api.getMyProfile()
+            profile.blockedUserIds?.let { authPreferences.saveBlockedUserIds(it) }
+        } catch (_: Exception) { }
     }
 
     private fun UserProfileDto.toDomain(): UserProfile{

@@ -107,9 +107,9 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun reportMessage(messageId: String): Result<Unit> {
+    override suspend fun reportMessage(messageId: String, reason: String?): Result<Unit> {
         return try {
-            val response = api.reportMessage(messageId, ReportRequestDto())
+            val response = api.reportMessage(messageId, ReportRequestDto(reason = reason))
             when {
                 response.isSuccessful -> Result.success(Unit)
                 response.code() == 409 -> Result.failure(Exception("already_reported"))

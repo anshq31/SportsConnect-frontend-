@@ -15,6 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ansh.sportsapp.domain.model.GigStatus
+import com.ansh.sportsapp.domain.model.Participant
 import com.ansh.sportsapp.presentation.navigation.Screen
 import com.ansh.sportsapp.presentation.review.ReviewViewModel
 import com.ansh.sportsapp.presentation.review.SubmitReviewDialog
@@ -52,6 +53,7 @@ fun GigDetailScreen(
             when (event) {
                 is GigDetailUiEvent.JoinSuccess -> snackbarHostState.showSnackbar("Join request sent!")
                 is GigDetailUiEvent.ShowSnackBar -> snackbarHostState.showSnackbar(event.message)
+                is GigDetailUiEvent.NavigateBack -> navController.popBackStack()
             }
         }
     }
@@ -80,6 +82,8 @@ fun GigDetailScreen(
             when {
                 state.isLoading -> DetailLoadingState()
 
+                state.isBlockedAccess -> GigBlockedAccessState()
+
                 state.error != null -> DetailErrorState(message = state.error!!)
 
                 else -> state.gig?.let { gig ->
@@ -95,6 +99,17 @@ fun GigDetailScreen(
                                 isOwner = state.isOwner,
                                 onComplete = { viewModel.completeGig() }
                             )
+                        }
+
+                        // Mini map (only when backend provides coordinates)
+                        if (gig.latitude != null && gig.longitude != null) {
+                            item {
+                                GigMiniMap(
+                                    lat = gig.latitude,
+                                    lng = gig.longitude,
+                                    sport = gig.sport
+                                )
+                            }
                         }
 
                         // Action button
@@ -124,6 +139,43 @@ fun GigDetailScreen(
                             )
                         }
 
+                        // Participants list (owner view — for blocking)
+                        if (state.isOwner && gig.status != GigStatus.COMPLETED && gig.acceptedParticipants.isNotEmpty()) {
+                            item {
+                                SectionHeader(title = "Participants", count = gig.acceptedParticipants.size)
+                            }
+                            items(
+                                items = gig.acceptedParticipants.toList(),
+                                key = { "bl_${it.id}" }
+                            ) { participant ->
+                                ParticipantBlockRow(
+                                    participant = participant,
+                                    isBlocking = state.blockingUserId == participant.id,
+                                    onBlockClick = { viewModel.blockParticipant(participant.id, participant.username) },
+                                    onProfileClick = { navController.navigate(Screen.UserProfile.createRoute(it)) }
+                                )
+                            }
+                        }
+
+                        // Gig master row (participant view — for blocking gig master only)
+                        if (state.isParticipant && gig.status != GigStatus.COMPLETED && gig.gigMasterId != null) {
+                            item {
+                                SectionHeader(title = "Gig Master")
+                            }
+                            item(key = "gm_block") {
+                                val gigMasterParticipant = Participant(
+                                    id = gig.gigMasterId,
+                                    username = gig.gigMasterUsername
+                                )
+                                ParticipantBlockRow(
+                                    participant = gigMasterParticipant,
+                                    isBlocking = state.blockingUserId == gig.gigMasterId,
+                                    onBlockClick = { viewModel.blockParticipant(gig.gigMasterId, gig.gigMasterUsername) },
+                                    onProfileClick = { navController.navigate(Screen.UserProfile.createRoute(it)) }
+                                )
+                            }
+                        }
+
                         // Review participants
                         if (state.isOwner && gig.status == GigStatus.COMPLETED) {
                             item {
@@ -138,9 +190,11 @@ fun GigDetailScreen(
                                 ) { participant ->
                                     ParticipantReviewRow(
                                         participant = participant,
+                                        isBlocking = state.blockingUserId == participant.id,
                                         onReviewClick = { id, username ->
                                             reviewingParticipant = id to username
-                                        }
+                                        },
+                                        onBlockClick = { viewModel.blockParticipant(participant.id, participant.username) }
                                     )
                                 }
                             }

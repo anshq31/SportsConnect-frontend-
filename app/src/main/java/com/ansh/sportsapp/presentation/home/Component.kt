@@ -18,15 +18,20 @@ import androidx.compose.ui.unit.*
 import com.ansh.sportsapp.domain.model.Gig
 import com.ansh.sportsapp.ui.theme.*
 
+private val RADIUS_OPTIONS = listOf(5, 10, 15, 25, 50)
+
 // ─── Top Bar ─────────────────────────────────────────────────────────────────
 
 @Composable
 fun HomeTopBar(
     isScrolled: Boolean,
     sportQuery: String,
-    locationQuery: String,
+    nearMeActive: Boolean,
+    hasLocationPermission: Boolean,
+    radiusKm: Int,
     onSportChange: (String) -> Unit,
-    onLocationChange: (String) -> Unit,
+    onNearMeToggle: () -> Unit,
+    onRadiusChange: (Int) -> Unit,
     onClearFilters: () -> Unit
 ) {
     val elevationAlpha by animateFloatAsState(
@@ -81,9 +86,12 @@ fun HomeTopBar(
         // Search bar
         HomeSearchBar(
             sportQuery = sportQuery,
-            locationQuery = locationQuery,
+            nearMeActive = nearMeActive,
+            hasLocationPermission = hasLocationPermission,
+            radiusKm = radiusKm,
             onSportChange = onSportChange,
-            onLocationChange = onLocationChange,
+            onNearMeToggle = onNearMeToggle,
+            onRadiusChange = onRadiusChange,
             onClearFilters = onClearFilters
         )
 
@@ -145,13 +153,16 @@ private fun LiveIndicator() {
 @Composable
 fun HomeSearchBar(
     sportQuery: String,
-    locationQuery: String,
+    nearMeActive: Boolean,
+    hasLocationPermission: Boolean,
+    radiusKm: Int,
     onSportChange: (String) -> Unit,
-    onLocationChange: (String) -> Unit,
+    onNearMeToggle: () -> Unit,
+    onRadiusChange: (Int) -> Unit,
     onClearFilters: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val hasFilter = sportQuery.isNotBlank() || locationQuery.isNotBlank()
+    val hasFilter = sportQuery.isNotBlank() || nearMeActive
 
     val fieldColors = OutlinedTextFieldDefaults.colors(
         unfocusedBorderColor = OutlineVariant,
@@ -183,27 +194,14 @@ fun HomeSearchBar(
                 value = sportQuery,
                 onValueChange = onSportChange,
                 modifier = Modifier.weight(1f),
-                placeholder = {
-                    Text("Sport", style = MaterialTheme.typography.bodySmall)
-                },
+                placeholder = { Text("Sport", style = MaterialTheme.typography.bodySmall) },
                 leadingIcon = {
-                    Icon(
-                        Icons.Default.SportsSoccer,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Icon(Icons.Default.SportsSoccer, contentDescription = null, modifier = Modifier.size(16.dp))
                 },
                 trailingIcon = {
                     AnimatedVisibility(sportQuery.isNotBlank()) {
-                        IconButton(
-                            onClick = { onSportChange("") },
-                            modifier = Modifier.size(20.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = null,
-                                modifier = Modifier.size(14.dp)
-                            )
+                        IconButton(onClick = { onSportChange("") }, modifier = Modifier.size(20.dp)) {
+                            Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(14.dp))
                         }
                     }
                 },
@@ -213,39 +211,77 @@ fun HomeSearchBar(
                 colors = fieldColors
             )
 
-            OutlinedTextField(
-                value = locationQuery,
-                onValueChange = onLocationChange,
-                modifier = Modifier.weight(1f),
-                placeholder = {
-                    Text("Location", style = MaterialTheme.typography.bodySmall)
-                },
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                },
-                trailingIcon = {
-                    AnimatedVisibility(locationQuery.isNotBlank()) {
-                        IconButton(
-                            onClick = { onLocationChange("") },
-                            modifier = Modifier.size(20.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = null,
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
-                    }
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(10.dp),
-                textStyle = MaterialTheme.typography.bodySmall,
-                colors = fieldColors
+            // Near Me toggle button
+            val nearMeBg by animateColorAsState(
+                targetValue = if (nearMeActive) SportGreenContainer else ElevatedDark,
+                label = "nearMeBg"
             )
+            val nearMeBorder by animateColorAsState(
+                targetValue = if (nearMeActive) SportGreen.copy(alpha = 0.5f) else OutlineVariant,
+                label = "nearMeBorder"
+            )
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(nearMeBg)
+                    .border(1.dp, nearMeBorder, RoundedCornerShape(10.dp))
+                    .clickable { onNearMeToggle() }
+                    .padding(horizontal = 12.dp, vertical = 14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        if (nearMeActive) Icons.Default.MyLocation else Icons.Default.LocationOn,
+                        contentDescription = "Near me",
+                        modifier = Modifier.size(14.dp),
+                        tint = if (nearMeActive) SportGreen else OnSurfaceHint
+                    )
+                    Text(
+                        text = "Near me",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (nearMeActive) SportGreen else OnSurfaceHint
+                    )
+                }
+            }
+        }
+
+        // Radius chips — only when Near Me is active
+        AnimatedVisibility(
+            visible = nearMeActive,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RADIUS_OPTIONS.forEach { km ->
+                    val selected = radiusKm == km
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(if (selected) SportGreenContainer else ElevatedDark)
+                            .border(
+                                1.dp,
+                                if (selected) SportGreen.copy(alpha = 0.5f) else OutlineVariant,
+                                RoundedCornerShape(20.dp)
+                            )
+                            .clickable { onRadiusChange(km) }
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "${km}km",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                            ),
+                            color = if (selected) SportGreen else OnSurfaceHint
+                        )
+                    }
+                }
+            }
         }
 
         AnimatedVisibility(
@@ -260,19 +296,12 @@ fun HomeSearchBar(
                 if (sportQuery.isNotBlank()) {
                     ActiveFilterChip(label = sportQuery, onRemove = { onSportChange("") })
                 }
-                if (locationQuery.isNotBlank()) {
-                    ActiveFilterChip(label = locationQuery, onRemove = { onLocationChange("") })
+                if (nearMeActive) {
+                    ActiveFilterChip(label = "Near me · ${radiusKm}km", onRemove = onNearMeToggle)
                 }
                 Spacer(Modifier.weight(1f))
-                TextButton(
-                    onClick = onClearFilters,
-                    contentPadding = PaddingValues(horizontal = 6.dp)
-                ) {
-                    Text(
-                        "Clear all",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = ErrorRed
-                    )
+                TextButton(onClick = onClearFilters, contentPadding = PaddingValues(horizontal = 6.dp)) {
+                    Text("Clear all", style = MaterialTheme.typography.labelSmall, color = ErrorRed)
                 }
             }
         }

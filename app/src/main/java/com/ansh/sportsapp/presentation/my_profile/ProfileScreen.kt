@@ -114,7 +114,8 @@ fun ProfileScreen(
                 username = state.profile?.username,
                 onEditClick = { navController.navigate(Screen.EditProfile.route) },
                 onLogoutClick = { viewModel.logOut() },
-                onDeleteClick = { showDeleteDialog = true }
+                onDeleteClick = { showDeleteDialog = true },
+                onBlockedUsersClick = { navController.navigate(Screen.BlockedUsers.route) }
             )
         }
     ) { padding ->

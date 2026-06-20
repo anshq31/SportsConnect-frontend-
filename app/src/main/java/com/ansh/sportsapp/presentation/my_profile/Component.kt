@@ -28,7 +28,8 @@ fun ProfileTopBar(
     username: String?,
     onEditClick: () -> Unit,
     onLogoutClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    onBlockedUsersClick: () -> Unit = {}
 ) {
     Column {
         Box(
@@ -60,6 +61,25 @@ fun ProfileTopBar(
                 modifier = Modifier.align(Alignment.CenterEnd),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
+                // Blocked users button
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(ElevatedDark)
+                        .border(1.dp, OutlineVariant, RoundedCornerShape(10.dp))
+                ) {
+                    IconButton(
+                        onClick = onBlockedUsersClick,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Block,
+                            contentDescription = "Blocked Users",
+                            tint = OnSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
                 // Edit button
                 Box(
                     modifier = Modifier

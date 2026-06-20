@@ -13,7 +13,6 @@ import com.ansh.sportsapp.data.remote.dto.user.ReviewDto
 import com.ansh.sportsapp.data.remote.dto.user.ReviewRequestDto
 import com.ansh.sportsapp.data.remote.dto.user.UserProfileDto
 import com.ansh.sportsapp.data.remote.dto.user.UserUpdateDto
-import com.ansh.sportsapp.domain.model.Gig
 import com.ansh.sportsapp.data.remote.dto.chat.ReportRequestDto
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -40,7 +39,9 @@ interface  SportsApi {
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 10,
         @Query("sport") sport: String? = null,
-        @Query("location") location: String? = null
+        @Query("lat") lat: Double? = null,
+        @Query("lng") lng: Double? = null,
+        @Query("radiusKm") radiusKm: Int? = null
     ) : PageResponseDto<GigDto>
 
     @GET("api/gigs/joined")

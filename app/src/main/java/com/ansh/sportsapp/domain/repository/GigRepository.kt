@@ -1,21 +1,29 @@
 package com.ansh.sportsapp.domain.repository
 
 import com.ansh.sportsapp.common.Resource
-import com.ansh.sportsapp.data.remote.dto.gig.GigDto
 import com.ansh.sportsapp.domain.model.Gig
 import com.ansh.sportsapp.domain.model.GigRequest
 
 interface GigRepository {
     suspend fun getActiveGigs(
         sport: String? = null,
-        location: String? = null
+        lat: Double? = null,
+        lng: Double? = null,
+        radiusKm: Int? = null
     ): Resource<List<Gig>>
 
     suspend fun getGigParticipatedIn(): Resource<List<Gig>>
 
     suspend fun getGigByGigMaster(): Resource<List<Gig>>
 
-    suspend fun createGig(sport: String, location : String, dateTime: String, playersNeeded: Int): Resource<Boolean>
+    suspend fun createGig(
+        sport: String,
+        location: String,
+        latitude: Double?,
+        longitude: Double?,
+        dateTime: String,
+        playersNeeded: Int
+    ): Resource<Boolean>
 
     suspend fun getGigById(gigId: Long): Resource<Gig>
     suspend fun requestJoin(gigId: Long): Resource<Boolean>

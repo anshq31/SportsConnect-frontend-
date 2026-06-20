@@ -3,14 +3,16 @@ package com.ansh.sportsapp.presentation.gig_detail
 import com.ansh.sportsapp.domain.model.Gig
 import com.ansh.sportsapp.domain.model.GigRequest
 
-data class GigDetailState (
+data class GigDetailState(
     val gig: Gig? = null,
     val isLoading: Boolean = false,
     val isJoinLoading: Boolean = false,
     val isRequestsLoading: Boolean = false,
     val error: String? = null,
-    val requests: List<GigRequest> = emptyList()
-){
+    val requests: List<GigRequest> = emptyList(),
+    val isBlockedAccess: Boolean = false,
+    val blockingUserId: Long? = null
+) {
     val isOwner : Boolean
         get() = gig?.isOwner ?: false
 

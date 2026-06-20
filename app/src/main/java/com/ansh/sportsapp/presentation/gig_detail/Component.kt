@@ -1,5 +1,7 @@
 package com.ansh.sportsapp.presentation.gig_detail
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -15,13 +17,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.ansh.sportsapp.domain.model.*
 import com.ansh.sportsapp.presentation.gig_detail.*
 import com.ansh.sportsapp.ui.theme.*
 import kotlinx.coroutines.delay
+import org.maplibre.android.annotations.MarkerOptions
+import org.maplibre.android.camera.CameraPosition
+import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.maps.MapView
+import org.maplibre.android.maps.Style
+
+private const val MAP_STYLE_MINI = "https://tiles.openfreemap.org/styles/liberty"
 
 // ─── Top Bar ─────────────────────────────────────────────────────────────────
 
@@ -587,7 +601,9 @@ private fun RequestCardContent(request: GigRequest, onClick: (Long) -> Unit) {
 @Composable
 fun ParticipantReviewRow(
     participant: Participant,
-    onReviewClick: (Long, String) -> Unit
+    isBlocking: Boolean = false,
+    onReviewClick: (Long, String) -> Unit,
+    onBlockClick: (() -> Unit)? = null
 ) {
     Box(
         modifier = Modifier
@@ -627,21 +643,105 @@ fun ParticipantReviewRow(
                 )
             }
 
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(TertiaryContainer)
-                    .border(1.dp, TertiaryIndigo.copy(alpha = 0.3f), RoundedCornerShape(10.dp))
-                    .clickable { onReviewClick(participant.id, participant.username) }
-                    .padding(horizontal = 14.dp, vertical = 8.dp)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Review", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold), color = TertiaryIndigo)
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(TertiaryContainer)
+                        .border(1.dp, TertiaryIndigo.copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                        .clickable { onReviewClick(participant.id, participant.username) }
+                        .padding(horizontal = 14.dp, vertical = 8.dp)
+                ) {
+                    Text("Review", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold), color = TertiaryIndigo)
+                }
+
+                if (onBlockClick != null) {
+                    if (isBlocking) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = ErrorRed
+                        )
+                    } else {
+                        IconButton(onClick = onBlockClick, modifier = Modifier.size(32.dp)) {
+                            Icon(Icons.Default.Block, contentDescription = "Block", tint = ErrorRed.copy(alpha = 0.7f), modifier = Modifier.size(18.dp))
+                        }
+                    }
+                }
             }
         }
     }
 }
 
-// ─── Detail loading / error ───────────────────────────────────────────────────
+// ─── Participant block row (active gig participants) ──────────────────────────
+
+@Composable
+fun ParticipantBlockRow(
+    participant: Participant,
+    isBlocking: Boolean,
+    onBlockClick: () -> Unit,
+    onProfileClick: (Long) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(SurfaceVariantDark)
+            .border(1.dp, OutlineVariant, RoundedCornerShape(14.dp))
+            .padding(horizontal = 16.dp, vertical = 14.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                modifier = Modifier
+                    .clickable { onProfileClick(participant.id) }
+                    .weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(CircleShape)
+                        .background(SportGreenContainer)
+                        .border(1.dp, SportGreen.copy(alpha = 0.3f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = participant.username.first().uppercaseChar().toString(),
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = SportGreen
+                    )
+                }
+                Text(
+                    text = "@${participant.username}",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                    color = OnSurface
+                )
+            }
+
+            if (isBlocking) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
+                    color = ErrorRed
+                )
+            } else {
+                IconButton(onClick = onBlockClick, modifier = Modifier.size(32.dp)) {
+                    Icon(Icons.Default.Block, contentDescription = "Block", tint = ErrorRed.copy(alpha = 0.7f), modifier = Modifier.size(18.dp))
+                }
+            }
+        }
+    }
+}
+
+// ─── Detail loading / error / blocked ────────────────────────────────────────
 
 @Composable
 fun DetailLoadingState() {
@@ -659,6 +759,28 @@ fun DetailErrorState(message: String) {
         ) {
             Icon(Icons.Default.ErrorOutline, null, tint = ErrorRed, modifier = Modifier.size(40.dp))
             Text(message, color = ErrorRed, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+@Composable
+fun GigBlockedAccessState() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(Icons.Default.Block, null, tint = OnSurfaceHint, modifier = Modifier.size(48.dp))
+            Text(
+                "Gig not available",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = OnSurface
+            )
+            Text(
+                "This gig is not accessible.",
+                style = MaterialTheme.typography.bodySmall,
+                color = OnSurfaceHint
+            )
         }
     }
 }
@@ -683,3 +805,85 @@ fun ReceivedRequestsContent(
     onClick: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) { /* No-op - now handled via LazyListScope extension */ }
+
+// ─── Gig mini map ─────────────────────────────────────────────────────────────
+
+@Composable
+fun GigMiniMap(lat: Double, lng: Double, sport: String) {
+    val context = LocalContext.current
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    var mapView by remember { mutableStateOf<MapView?>(null) }
+
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> mapView?.onStart()
+                Lifecycle.Event.ON_RESUME -> mapView?.onResume()
+                Lifecycle.Event.ON_PAUSE -> mapView?.onPause()
+                Lifecycle.Event.ON_STOP -> mapView?.onStop()
+                Lifecycle.Event.ON_DESTROY -> { mapView?.onDestroy(); mapView = null }
+                else -> {}
+            }
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+            .border(1.dp, OutlineVariant, androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+            .clickable {
+                val uri = Uri.parse("geo:$lat,$lng?q=$lat,$lng($sport)")
+                context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+            }
+    ) {
+        AndroidView(
+            factory = { ctx ->
+                MapView(ctx).also { mv ->
+                    mapView = mv
+                    mv.onCreate(null)
+                    mv.getMapAsync { map ->
+                        map.uiSettings.setAllGesturesEnabled(false)
+                        map.setStyle(Style.Builder().fromUri(MAP_STYLE_MINI)) { _ ->
+                            map.cameraPosition = CameraPosition.Builder()
+                                .target(LatLng(lat, lng))
+                                .zoom(14.0)
+                                .build()
+                            map.addMarker(MarkerOptions().position(LatLng(lat, lng)))
+                        }
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        )
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .background(Color.Black.copy(alpha = 0.5f))
+                .padding(horizontal = 6.dp, vertical = 3.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
+            Icon(Icons.Default.OpenInNew, null, Modifier.size(10.dp), tint = Color.White.copy(alpha = 0.8f))
+            Text(
+                text = "Open in Maps",
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                color = Color.White.copy(alpha = 0.8f)
+            )
+        }
+
+        Text(
+            text = "© OpenStreetMap contributors",
+            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+            color = Color.White.copy(alpha = 0.7f),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .background(Color.Black.copy(alpha = 0.4f))
+                .padding(horizontal = 4.dp, vertical = 2.dp)
+        )
+    }
+}

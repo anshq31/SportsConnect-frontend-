@@ -89,9 +89,9 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun reportMessage(messageId: String) {
+    fun reportMessage(messageId: String, reason: String? = null) {
         viewModelScope.launch {
-            val result = chatRepository.reportMessage(messageId)
+            val result = chatRepository.reportMessage(messageId, reason)
             result.fold(
                 onSuccess = { _toastEvent.emit("Message reported") },
                 onFailure = { e ->
@@ -102,11 +102,10 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun blockUser(userId: Long) {
+    fun blockUser(userId: Long, username: String) {
         viewModelScope.launch {
-            when (userRepository.blockUser(userId)) {
+            when (userRepository.blockUser(userId, username)) {
                 is Resource.Success -> {
-                    authPreferences.addBlockedUserId(userId)
                     _state.update { current ->
                         val newBlocked = current.blockedUserIds + userId
                         current.copy(

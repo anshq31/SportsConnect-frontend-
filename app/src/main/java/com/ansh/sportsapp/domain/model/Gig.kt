@@ -11,5 +11,8 @@ data class Gig(
     val isParticipant: Boolean,
     val requestStatus: String = "NONE",
     val status: GigStatus,
-    val acceptedParticipants: List<Participant> = emptyList()
+    val acceptedParticipants: List<Participant> = emptyList(),
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val gigMasterId: Long? = null
 )

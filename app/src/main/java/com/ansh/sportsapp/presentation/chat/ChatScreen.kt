@@ -32,6 +32,17 @@ fun ChatScreen(
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    var reportingMessageId by remember { mutableStateOf<String?>(null) }
+
+    reportingMessageId?.let { msgId ->
+        ReportReasonDialog(
+            onConfirm = { reason ->
+                viewModel.reportMessage(msgId, reason)
+                reportingMessageId = null
+            },
+            onDismiss = { reportingMessageId = null }
+        )
+    }
 
     // Collect toast events
     LaunchedEffect(Unit) {
@@ -119,8 +130,8 @@ fun ChatScreen(
                         ) {
                             MessageBubble(
                                 message = message,
-                                onReport = { viewModel.reportMessage(it) },
-                                onBlock = { userId -> viewModel.blockUser(userId) }
+                                onReport = { msgId -> reportingMessageId = msgId },
+                                onBlock = { userId, username -> viewModel.blockUser(userId, username) }
                             )
                         }
                     }

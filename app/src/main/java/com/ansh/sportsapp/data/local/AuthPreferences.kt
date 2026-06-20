@@ -24,6 +24,7 @@ class AuthPreferences @Inject constructor(
         private val USER_ID_KEY = stringPreferencesKey("user_id")
         private val USERNAME_KEY = stringPreferencesKey("username")
         private val BLOCKED_USER_IDS_KEY = stringPreferencesKey("blocked_user_ids")
+        private val BLOCKED_USER_ENTRIES_KEY = stringPreferencesKey("blocked_user_entries")
     }
 
     suspend fun saveAuthData(accessToken : String , refreshToken : String, userId : String,username: String){
@@ -77,6 +78,41 @@ class AuthPreferences @Inject constructor(
                 ?.split(",")?.filter { it.isNotBlank() && it != id.toString() }
                 ?: emptyList()
             prefs[BLOCKED_USER_IDS_KEY] = current.joinToString(",")
+        }
+    }
+
+    val blockedUserEntries: Flow<List<BlockedUserEntry>> = context.dataStore.data.map { prefs ->
+        prefs[BLOCKED_USER_ENTRIES_KEY]
+            ?.split(",")
+            ?.filter { it.isNotBlank() }
+            ?.mapNotNull { entry ->
+                val parts = entry.split(":")
+                if (parts.size >= 2) {
+                    val id = parts[0].toLongOrNull() ?: return@mapNotNull null
+                    val username = parts.drop(1).joinToString(":")
+                    BlockedUserEntry(id, username)
+                } else null
+            }
+            ?: emptyList()
+    }
+
+    suspend fun saveBlockedUserEntry(entry: BlockedUserEntry) {
+        context.dataStore.edit { prefs ->
+            val current = prefs[BLOCKED_USER_ENTRIES_KEY]
+                ?.split(",")?.filter { it.isNotBlank() }?.toMutableList() ?: mutableListOf()
+            val key = "${entry.userId}:${entry.username}"
+            if (!current.contains(key)) current.add(key)
+            prefs[BLOCKED_USER_ENTRIES_KEY] = current.joinToString(",")
+        }
+    }
+
+    suspend fun removeBlockedUserEntry(userId: Long) {
+        context.dataStore.edit { prefs ->
+            val current = prefs[BLOCKED_USER_ENTRIES_KEY]
+                ?.split(",")
+                ?.filter { it.isNotBlank() && !it.startsWith("$userId:") }
+                ?: emptyList()
+            prefs[BLOCKED_USER_ENTRIES_KEY] = current.joinToString(",")
         }
     }
 

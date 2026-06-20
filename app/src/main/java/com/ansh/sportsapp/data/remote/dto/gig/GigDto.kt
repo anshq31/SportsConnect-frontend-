@@ -17,5 +17,8 @@ data class GigDto(
     val isOwner: Boolean,
     @SerializedName("isParticipant")
     val isParticipant: Boolean,
-    val requestStatus : String = "NONE"
+    val requestStatus : String = "NONE",
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val gigMasterId: Long? = null
 )

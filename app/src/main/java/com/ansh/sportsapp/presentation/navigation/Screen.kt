@@ -3,6 +3,7 @@ package com.ansh.sportsapp.presentation.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Person
@@ -37,4 +38,6 @@ sealed class Screen(val route : String , val title : String , val icon : ImageVe
     object UserProfile : Screen("user_profile/{userId}", "User Profile", Icons.Default.Person) {
         fun createRoute(userId: Long) = "user_profile/$userId"
     }
+
+    object BlockedUsers : Screen("blocked_users", "Blocked Users", Icons.Default.Block)
 }

@@ -136,7 +136,7 @@ fun ChatOnlineIndicator() {
 fun MessageBubble(
     message: ChatMessage,
     onReport: (messageId: String) -> Unit = {},
-    onBlock: (userId: Long) -> Unit = {}
+    onBlock: (userId: Long, username: String) -> Unit = { _, _ -> }
 ) {
     val isMe = message.isFromMe
     var showMenu by remember { mutableStateOf(false) }
@@ -167,7 +167,7 @@ fun MessageBubble(
                 DropdownMenuItem(
                     text = { Text("Block @${message.senderUsername}", color = ErrorRed, style = MaterialTheme.typography.bodySmall) },
                     leadingIcon = { Icon(Icons.Default.Block, contentDescription = null, tint = ErrorRed, modifier = Modifier.size(16.dp)) },
-                    onClick = { showMenu = false; onBlock(message.senderId) }
+                    onClick = { showMenu = false; onBlock(message.senderId, message.senderUsername) }
                 )
             }
         }
@@ -458,6 +458,79 @@ fun ChatInputBar(
             }
         }
     }
+}
+
+// ─── Report Reason Dialog ─────────────────────────────────────────────────────
+
+@Composable
+fun ReportReasonDialog(
+    onConfirm: (reason: String?) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var reason by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = SurfaceVariantDark,
+        icon = {
+            Icon(
+                Icons.Default.Flag,
+                contentDescription = null,
+                tint = WarningAmber,
+                modifier = Modifier.size(28.dp)
+            )
+        },
+        title = {
+            Text(
+                "Report Message",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = OnSurface
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    "Optionally describe why you're reporting this message.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = OnSurfaceVariant
+                )
+                OutlinedTextField(
+                    value = reason,
+                    onValueChange = { reason = it },
+                    placeholder = {
+                        Text("Add a reason…", style = MaterialTheme.typography.bodySmall)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 3,
+                    shape = RoundedCornerShape(10.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = OutlineVariant,
+                        focusedBorderColor = WarningAmber,
+                        unfocusedContainerColor = ElevatedDark,
+                        focusedContainerColor = ElevatedDark,
+                        cursorColor = WarningAmber,
+                        unfocusedTextColor = OnSurface,
+                        focusedTextColor = OnSurface,
+                        unfocusedPlaceholderColor = OnSurfaceHint,
+                        focusedPlaceholderColor = OnSurfaceHint
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(reason.trim().takeIf { it.isNotBlank() }) },
+                colors = ButtonDefaults.buttonColors(containerColor = WarningAmber)
+            ) {
+                Text("Report", color = Color(0xFF0A0C0F), fontWeight = FontWeight.SemiBold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = OnSurfaceHint)
+            }
+        }
+    )
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

@@ -9,8 +9,8 @@
         <include .../>
         <exclude .../>
         -->
-        <exclude domain= "file"
-            path = "datastore/auth_prefs.preferences.pb"/>
+        <exclude domain="file"
+            path="datastore/auth_prefs.preferences_pb"/>
     </cloud-backup>
     <device-transfer>
         <exclude domain="file" path="datastore/auth_prefs.preferences_pb" />

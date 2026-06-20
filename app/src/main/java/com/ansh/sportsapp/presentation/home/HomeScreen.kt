@@ -1,5 +1,8 @@
 package com.ansh.sportsapp.presentation.home
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -13,12 +16,11 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.ansh.sportsapp.ui.theme.BackgroundDark
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,6 +33,14 @@ fun HomeScreen(
     var isRefreshing by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
 
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { perms ->
+        val granted = perms[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                perms[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        viewModel.onPermissionResult(granted)
+    }
+
     val isScrolled by remember {
         derivedStateOf { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 60 }
     }
@@ -40,14 +50,28 @@ fun HomeScreen(
     }
 
     Scaffold(
-        containerColor = com.ansh.sportsapp.ui.theme.BackgroundDark,
+        containerColor = BackgroundDark,
         topBar = {
             HomeTopBar(
                 isScrolled = isScrolled,
                 sportQuery = state.sportQuery,
-                locationQuery = state.locationQuery,
+                nearMeActive = state.nearMeActive,
+                hasLocationPermission = state.hasLocationPermission,
+                radiusKm = state.radiusKm,
                 onSportChange = viewModel::onSportQueryChange,
-                onLocationChange = viewModel::onLocationQueryChange,
+                onNearMeToggle = {
+                    if (!state.hasLocationPermission) {
+                        permissionLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            )
+                        )
+                    } else {
+                        viewModel.toggleNearMe()
+                    }
+                },
+                onRadiusChange = viewModel::setRadius,
                 onClearFilters = viewModel::clearFilters
             )
         }
@@ -69,7 +93,7 @@ fun HomeScreen(
                 )
 
                 state.gigs.isEmpty() -> HomeEmptyState(
-                    hasFilters = state.sportQuery.isNotBlank() || state.locationQuery.isNotBlank()
+                    hasFilters = state.sportQuery.isNotBlank() || state.nearMeActive
                 )
 
                 else -> {

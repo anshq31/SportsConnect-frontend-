@@ -50,6 +50,10 @@
 # DataStore
 -keep class androidx.datastore.** { *; }
 
+# MapLibre
+-keep class org.maplibre.** { *; }
+-dontwarn org.maplibre.**
+
 # Keep line numbers for crash reports
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile

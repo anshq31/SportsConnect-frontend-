@@ -4,19 +4,20 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ansh.sportsapp.common.Resource
+import com.ansh.sportsapp.domain.event.BlockEventBus
+import com.ansh.sportsapp.domain.repository.UserRepository
 import com.ansh.sportsapp.domain.usecase.gig.CompleteGigUseCase
 import com.ansh.sportsapp.domain.usecase.gig.GetGigByIdUseCase
 import com.ansh.sportsapp.domain.usecase.gig.GetMyRequestUseCase
 import com.ansh.sportsapp.domain.usecase.gig.ManageRequestUseCase
 import com.ansh.sportsapp.domain.usecase.gig.RequestJoinUseCase
-//import com.ansh.sportsapp.presentation.my_gigs.GigEvent
-//import com.ansh.sportsapp.presentation.my_gigs.GigEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,9 +29,10 @@ class GigDetailViewModel @Inject constructor(
     private val requestJoinUseCase: RequestJoinUseCase,
     private val getGigByIdUseCase: GetGigByIdUseCase,
     private val completeGigUseCase: CompleteGigUseCase,
-//    private val gigEventBus: GigEventBus,
+    private val userRepository: UserRepository,
+    private val blockEventBus: BlockEventBus,
     savedStateHandle: SavedStateHandle
-) : ViewModel(){
+) : ViewModel() {
     private val _state = MutableStateFlow(GigDetailState())
     val state : StateFlow<GigDetailState> = _state.asStateFlow()
 
@@ -38,28 +40,43 @@ class GigDetailViewModel @Inject constructor(
     val uiEvent = _uiEvent.asSharedFlow()
 
     init {
-        // Retrieve gigId from navigation arguments
         savedStateHandle.get<Long>("gigId")?.let { id ->
             if (id != -1L) {
                 loadGigThenRequests(id)
             }
         }
+
+        viewModelScope.launch {
+            blockEventBus.events.collectLatest { blockedId ->
+                val gig = _state.value.gig ?: return@collectLatest
+                val updatedParticipants = gig.acceptedParticipants.filter { it.id != blockedId }
+                val updatedRequests = _state.value.requests.filter { it.requesterId != blockedId }
+                _state.update {
+                    it.copy(
+                        gig = gig.copy(acceptedParticipants = updatedParticipants),
+                        requests = updatedRequests
+                    )
+                }
+            }
+        }
     }
 
-    private fun loadGigThenRequests(gigId : Long){
+    private fun loadGigThenRequests(gigId: Long) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            when(val result = getGigByIdUseCase(gigId)){
-                is Resource.Success->{
+            when (val result = getGigByIdUseCase(gigId)) {
+                is Resource.Success -> {
                     _state.update { it.copy(isLoading = false, gig = result.data) }
-                    if (result.data?.isOwner == true){
-                        loadRequests()
+                    if (result.data?.isOwner == true) loadRequests()
+                }
+                is Resource.Error -> {
+                    if (result.message == "403") {
+                        _state.update { it.copy(isLoading = false, isBlockedAccess = true) }
+                    } else {
+                        _state.update { it.copy(isLoading = false, error = result.message) }
                     }
                 }
-                is Resource.Error->{
-                    _state.update { it.copy(isLoading = false, error = result.message) }
-                }
-                is Resource.Loading-> Unit
+                is Resource.Loading -> Unit
             }
         }
     }
@@ -72,7 +89,11 @@ class GigDetailViewModel @Inject constructor(
                     _state.update { it.copy(isLoading = false, gig = result.data) }
                 }
                 is Resource.Error -> {
-                    _state.update { it.copy(isLoading = false, error = result.message) }
+                    if (result.message == "403") {
+                        _state.update { it.copy(isLoading = false, isBlockedAccess = true) }
+                    } else {
+                        _state.update { it.copy(isLoading = false, error = result.message) }
+                    }
                 }
                 is Resource.Loading -> Unit
             }
@@ -86,13 +107,46 @@ class GigDetailViewModel @Inject constructor(
             when (val result = requestJoinUseCase(gigId)) {
                 is Resource.Success -> {
                     _state.update { it.copy(isJoinLoading = false) }
-//                    gigEventBus.emit(GigEvent.GigJoined)
                     _uiEvent.emit(GigDetailUiEvent.JoinSuccess)
                     loadGig(gigId)
                 }
                 is Resource.Error -> {
                     _state.update { it.copy(isJoinLoading = false) }
-                    _uiEvent.emit(GigDetailUiEvent.ShowSnackBar(result.message ?: "Failed to join"))
+                    val msg = if (result.message == "403") "Unable to join this gig"
+                              else result.message ?: "Failed to join"
+                    _uiEvent.emit(GigDetailUiEvent.ShowSnackBar(msg))
+                }
+                is Resource.Loading -> Unit
+            }
+        }
+    }
+
+    fun blockParticipant(userId: Long, username: String) {
+        val gigMasterUsername = state.value.gig?.gigMasterUsername ?: return
+        viewModelScope.launch {
+            _state.update { it.copy(blockingUserId = userId) }
+            when (val result = userRepository.blockUser(userId, username)) {
+                is Resource.Success -> {
+                    blockEventBus.emit(userId)
+                    if (username == gigMasterUsername) {
+                        _uiEvent.emit(GigDetailUiEvent.NavigateBack)
+                    } else {
+                        _state.update { s ->
+                            val currentGig = s.gig ?: return@update s
+                            s.copy(
+                                blockingUserId = null,
+                                gig = currentGig.copy(
+                                    acceptedParticipants = currentGig.acceptedParticipants.filter { it.id != userId }
+                                ),
+                                requests = s.requests.filter { it.requesterId != userId }
+                            )
+                        }
+                        _uiEvent.emit(GigDetailUiEvent.ShowSnackBar("$username blocked"))
+                    }
+                }
+                is Resource.Error -> {
+                    _state.update { it.copy(blockingUserId = null) }
+                    _uiEvent.emit(GigDetailUiEvent.ShowSnackBar(result.message ?: "Failed to block user"))
                 }
                 is Resource.Loading -> Unit
             }
