@@ -199,7 +199,7 @@ fun LoginScreen(
                                 modifier = Modifier.clickable {
                                     val intent = Intent(
                                         Intent.ACTION_VIEW,
-                                        Uri.parse("https://www.privacypolicies.com/live/ca3c4faa-12c6-4cc5-a07e-cf9ebe2d056c")
+                                        Uri.parse("https://www.privacypolicies.com/live/46a739bc-2237-401a-8255-a2cdcc276cb3")
                                     )
                                     context.startActivity(intent)
                                 }
